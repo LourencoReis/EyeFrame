@@ -73,6 +73,9 @@ function createOverlayWindow() {
 
     overlayWindow.loadFile(path.join(__dirname, 'renderer', 'overlay.html'));
 
+    // Show the overlay window by default
+    overlayWindow.show();
+
     // Make window draggable
     overlayWindow.setIgnoreMouseEvents(false);
 
