@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Timers</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="overlay-window">
+    <!-- Draggable Header -->
+    <div class="overlay-header" id="overlayHeader">
+        <span class="overlay-title">Warframe Timers</span>
+        <div class="overlay-controls">
+            <button class="control-btn" id="expandBtn" title="Expand">↕</button>
+            <button class="control-btn" id="collapseBtn" title="Collapse">↔</button>
+            <button class="control-btn" id="minimizeBtn" title="Minimize">−</button>
+        </div>
+    </div>
+
+    <!-- Timer Content -->
+    <div class="overlay-content" id="overlayContent">
+        <!-- Timer items will be dynamically generated here -->
+        <div class="timer-item" id="dailyResetTimer">
+            <div class="timer-header">
+                <span class="timer-name">Daily Reset</span>
+                <span class="timer-status">Active</span>
+            </div>
+            <div class="timer-countdown">2h 34m remaining</div>
+        </div>
+
+        <div class="timer-item" id="cetusTimer">
+            <div class="timer-header">
+                <span class="timer-name">Cetus</span>
+                <span class="timer-status day">Day</span>
+            </div>
+            <div class="timer-countdown">1h 15m remaining</div>
+        </div>
+
+        <div class="timer-item" id="fortunaTimer">
+            <div class="timer-header">
+                <span class="timer-name">Fortuna</span>
+                <span class="timer-status warm">Warm</span>
+            </div>
+            <div class="timer-countdown">45m remaining</div>
+        </div>
+
+        <div class="timer-item" id="arbitrationTimer">
+            <div class="timer-header">
+                <span class="timer-name">Arbitration</span>
+                <span class="timer-status arbitration">Active</span>
+            </div>
+            <div class="timer-countdown">2h 15m remaining</div>
+        </div>
+
+        <!-- No timers message (hidden by default) -->
+        <div class="no-timers" id="noTimersMessage" style="display: none;">
+            <p>No timers selected</p>
+            <p class="note">Open settings to select timers</p>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="loading" id="loadingIndicator" style="display: none;">
+        <div class="spinner"></div>
+        <span>Updating timers...</span>
+    </div>
+
+    <!-- Load the overlay script -->
+    <script src="overlay.js"></script>
+</body>
+</html>

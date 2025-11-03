@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warframe Timer Settings</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="settings-window">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Warframe Timer Settings</h1>
+            <p class="subtitle">Select which timers to display on your overlay</p>
+        </div>
+
+        <!-- Settings Form -->
+        <form id="settingsForm" class="settings-form">
+            <!-- Timer Selection Section -->
+            <div class="section">
+                <h2>Timer Selection</h2>
+                
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="dailyReset" name="dailyReset" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Daily Reset</span>
+                            <span class="timer-description">Daily login rewards and missions reset</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="cetusCycle" name="cetusCycle" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Cetus Day/Night Cycle</span>
+                            <span class="timer-description">Plains of Eidolon day and night cycle</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="fortunaCycle" name="fortunaCycle" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Fortuna Temperature Cycle</span>
+                            <span class="timer-description">Orb Vallis warm and cold cycle</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="arbitrationTimer" name="arbitrationTimer" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Arbitration</span>
+                            <span class="timer-description">Steel Path Arbitration rotation</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Overlay Settings Section -->
+            <div class="section">
+                <h2>Overlay Settings</h2>
+                
+                <div class="overlay-controls">
+                    <button type="button" id="toggleOverlay" class="control-btn">
+                        Hide Overlay
+                    </button>
+                    
+                    <button type="button" id="resetPosition" class="control-btn">
+                        Reset Position
+                    </button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="actions">
+                <button type="submit" id="applyBtn" class="btn btn-primary">
+                    Apply Changes
+                </button>
+                
+                <button type="button" id="cancelBtn" class="btn btn-secondary">
+                    Cancel
+                </button>
+            </div>
+        </form>
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="status-message hidden">
+            Settings saved successfully!
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Warframe Overlay v1.0.0</p>
+            <p class="note">The overlay window is draggable and stays on top</p>
+        </div>
+    </div>
+
+    <!-- Load the renderer script -->
+    <script src="index.js"></script>
+</body>
+</html>
