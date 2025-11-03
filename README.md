@@ -20,7 +20,7 @@ A desktop overlay application for displaying Warframe world timers, built with E
 ## 🚀 Download & Installation
 
 ### Option 1: Download Release (Recommended)
-1. Go to [Releases](https://github.com/yourusername/warframe-overlay/releases)
+1. Go to [Releases](https://github.com/LourencoReis/warframe-overlay/releases)
 2. Download `warframe-overlay-win32-x64.zip`
 3. Extract the ZIP file anywhere you like
 4. Run `warframe-overlay.exe` or double-click `Run Warframe Overlay.bat`
@@ -28,7 +28,7 @@ A desktop overlay application for displaying Warframe world timers, built with E
 ### Option 2: Build from Source
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/warframe-overlay.git
+git clone https://github.com/LourencoReis/warframe-overlay.git
 cd warframe-overlay
 
 # Install dependencies
