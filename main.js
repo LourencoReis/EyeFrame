@@ -52,9 +52,9 @@ function createOverlayWindow() {
 
     overlayWindow = new BrowserWindow({
         width: 300,
-        height: 280,
+        height: 320,
         minWidth: 250,
-        minHeight: 120,
+        minHeight: 200,
         maxWidth: 500,
         maxHeight: 800,
         x: width - 320, // Position near top-right corner

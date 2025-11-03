@@ -245,7 +245,7 @@ body {
 
 .overlay-header {
     background: linear-gradient(90deg, rgba(0, 212, 255, 0.8), rgba(0, 153, 204, 0.8));
-    padding: 8px 12px;
+    padding: 6px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -336,25 +336,25 @@ body {
 }
 
 .overlay-content {
-    padding: 15px;
+    padding: 8px;
     -webkit-app-region: no-drag;
-    min-height: 60px; /* Minimum content height */
+    min-height: 40px; /* Minimum content height */
     display: flex;
     flex-direction: column;
     overflow-y: auto; /* Allow scrolling if content overflows */
     overflow-x: hidden;
-    max-height: calc(100vh - 100px); /* Prevent overlay from getting too tall */
+    max-height: calc(100vh - 60px); /* Prevent overlay from getting too tall */
 }
 
 /* Timer Item Styles */
 .timer-item {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 8px;
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 4px;
     transition: all 0.3s ease;
-    min-height: 60px; /* Consistent height for each timer */
+    min-height: 45px; /* Consistent height for each timer */
     display: flex;
     flex-direction: column;
     justify-content: center;
