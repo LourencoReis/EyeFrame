@@ -11,16 +11,13 @@ let overlayContent;
 let noTimersMessage;
 let loadingIndicator;
 let minimizeBtn;
+let closeBtn;
 
 // Current settings and timer data
 let currentSettings = {};
 let timerData = {};
 let updateTimer;
 let isMinimized = false;
-let lastTimerCount = -1; // Track previous timer count to avoid unnecessary resizing
-let expandBtn;
-let collapseBtn;
-let isExpanded = false;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -31,8 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     noTimersMessage = document.getElementById('noTimersMessage');
     loadingIndicator = document.getElementById('loadingIndicator');
     minimizeBtn = document.getElementById('minimizeBtn');
-    expandBtn = document.getElementById('expandBtn');
-    collapseBtn = document.getElementById('collapseBtn');
+    closeBtn = document.getElementById('closeBtn');
     
     // Set up event listeners
     setupEventListeners();
@@ -53,12 +49,9 @@ function setupEventListeners() {
         updateTimerDisplay();
     });
     
-    // Minimize button
+    // Minimize and close buttons
     minimizeBtn.addEventListener('click', toggleMinimize);
-    
-    // Expand/Collapse buttons
-    expandBtn.addEventListener('click', expandOverlay);
-    collapseBtn.addEventListener('click', collapseOverlay);
+    closeBtn.addEventListener('click', closeOverlay);
     
     // Prevent context menu
     window.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -194,56 +187,59 @@ function simulateTimeProgression() {
  * Update the timer display based on current settings and data
  */
 function updateTimerDisplay() {
-    // Clear existing content
+    // Always show all timers regardless of settings
+    updateTimerItem('dailyResetTimer', timerData.dailyReset || getDefaultTimerData('dailyReset'));
+    updateTimerItem('cetusTimer', timerData.cetusCycle || getDefaultTimerData('cetusCycle'));
+    updateTimerItem('fortunaTimer', timerData.fortunaCycle || getDefaultTimerData('fortunaCycle'));
+    updateTimerItem('arbitrationTimer', timerData.arbitrationTimer || getDefaultTimerData('arbitrationTimer'));
+    
+    // Make all timer items visible
     const timerItems = overlayContent.querySelectorAll('.timer-item');
-    timerItems.forEach(item => item.style.display = 'none');
+    timerItems.forEach(item => item.style.display = 'flex');
     
-    let visibleTimers = 0;
-    
-    // Show/hide timers based on settings
-    if (currentSettings.dailyReset && timerData.dailyReset) {
-        updateTimerItem('dailyResetTimer', timerData.dailyReset);
-        visibleTimers++;
-    }
-    
-    if (currentSettings.cetusCycle && timerData.cetusCycle) {
-        updateTimerItem('cetusTimer', timerData.cetusCycle);
-        visibleTimers++;
-    }
-    
-    if (currentSettings.fortunaCycle && timerData.fortunaCycle) {
-        updateTimerItem('fortunaTimer', timerData.fortunaCycle);
-        visibleTimers++;
-    }
-    
-    if (currentSettings.arbitrationTimer && timerData.arbitrationTimer) {
-        updateTimerItem('arbitrationTimer', timerData.arbitrationTimer);
-        visibleTimers++;
-    }
-    
-    // Show/hide no timers message
-    noTimersMessage.style.display = visibleTimers === 0 ? 'block' : 'none';
-    
-    // Resize overlay window only if timer count changed
-    if (visibleTimers !== lastTimerCount) {
-        resizeOverlayWindow(visibleTimers);
-        lastTimerCount = visibleTimers;
-    }
+    // Hide no timers message since we always show timers
+    noTimersMessage.style.display = 'none';
 }
 
 /**
- * Resize overlay window based on number of visible timers
- * @param {number} timerCount - Number of visible timers
+ * Get default timer data for a timer type when real data isn't available
+ * @param {string} timerType - The type of timer
+ * @returns {Object} Default timer data
  */
-async function resizeOverlayWindow(timerCount) {
-    try {
-        const result = await window.electronAPI.resizeOverlay(timerCount);
-        if (result.success) {
-            console.log(`Overlay resized for ${timerCount} timers`);
+function getDefaultTimerData(timerType) {
+    const defaults = {
+        dailyReset: {
+            name: 'Daily Reset',
+            timeRemaining: 'Loading...',
+            status: 'Loading',
+            statusClass: 'loading'
+        },
+        cetusCycle: {
+            name: 'Cetus',
+            timeRemaining: 'Loading...',
+            status: 'Loading',
+            statusClass: 'loading'
+        },
+        fortunaCycle: {
+            name: 'Fortuna',
+            timeRemaining: 'Loading...',
+            status: 'Loading',
+            statusClass: 'loading'
+        },
+        arbitrationTimer: {
+            name: 'Arbitration',
+            timeRemaining: 'Loading...',
+            status: 'Loading',
+            statusClass: 'loading'
         }
-    } catch (error) {
-        console.error('Error resizing overlay:', error);
-    }
+    };
+    
+    return defaults[timerType] || {
+        name: 'Unknown Timer',
+        timeRemaining: 'Loading...',
+        status: 'Loading',
+        statusClass: 'loading'
+    };
 }
 
 /**
@@ -314,12 +310,19 @@ function toggleMinimize() {
     if (isMinimized) {
         overlayContent.style.display = 'none';
         minimizeBtn.textContent = '+';
-        minimizeBtn.title = 'Expand';
+        minimizeBtn.title = 'Restore';
     } else {
         overlayContent.style.display = 'block';
         minimizeBtn.textContent = '−';
         minimizeBtn.title = 'Minimize';
     }
+}
+
+/**
+ * Close the overlay window
+ */
+function closeOverlay() {
+    window.electronAPI.closeOverlay();
 }
 
 /**
@@ -337,44 +340,6 @@ function showLoading(show) {
 window.addEventListener('focus', () => {
     console.log('Overlay window focused');
 });
-
-/**
- * Expand the overlay to show more timers
- */
-async function expandOverlay() {
-    try {
-        const currentTimerCount = Object.values(currentSettings).filter(Boolean).length;
-        const expandedHeight = Math.max(300, currentTimerCount * 80 + 100); // More space per timer
-        
-        await window.electronAPI.setOverlaySize(300, expandedHeight);
-        isExpanded = true;
-        expandBtn.style.opacity = '0.5'; // Show it's active
-        collapseBtn.style.opacity = '1';
-        
-        console.log('Overlay expanded');
-    } catch (error) {
-        console.error('Error expanding overlay:', error);
-    }
-}
-
-/**
- * Collapse the overlay to compact view
- */
-async function collapseOverlay() {
-    try {
-        const currentTimerCount = Object.values(currentSettings).filter(Boolean).length;
-        const compactHeight = Math.max(150, currentTimerCount * 60 + 80); // Less space per timer
-        
-        await window.electronAPI.setOverlaySize(300, compactHeight);
-        isExpanded = false;
-        expandBtn.style.opacity = '1';
-        collapseBtn.style.opacity = '0.5'; // Show it's active
-        
-        console.log('Overlay collapsed');
-    } catch (error) {
-        console.error('Error collapsing overlay:', error);
-    }
-}
 
 window.addEventListener('blur', () => {
     console.log('Overlay window blurred');

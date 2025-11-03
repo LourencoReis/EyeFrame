@@ -22,7 +22,7 @@ function createSettingsWindow() {
             preload: path.join(__dirname, 'preload.js')
         },
         icon: path.join(__dirname, 'assets/icon.png'), // Optional: add an icon later
-        title: 'Warframe Timer Settings',
+        title: 'Eyeframe Settings',
         resizable: false,
         maximizable: false,
         autoHideMenuBar: true, // Hide the menu bar (File, Edit, View, etc.)
@@ -212,4 +212,54 @@ ipcMain.handle('set-overlay-size', (event, { width, height }) => {
     }
 });
 
-console.log('Warframe Overlay App started successfully!');
+// Handle overlay hide
+ipcMain.handle('hide-overlay', () => {
+    try {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+            overlayWindow.hide();
+            return { success: true };
+        }
+        return { success: false, error: 'Overlay window not available' };
+    } catch (error) {
+        console.error('Error hiding overlay:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// Handle overlay close
+ipcMain.handle('close-overlay', () => {
+    try {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+            overlayWindow.close();
+            return { success: true };
+        }
+        return { success: false, error: 'Overlay window not available' };
+    } catch (error) {
+        console.error('Error closing overlay:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// Handle overlay position reset
+ipcMain.handle('reset-overlay-position', () => {
+    try {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+            const { screen } = require('electron');
+            const primaryDisplay = screen.getPrimaryDisplay();
+            const { width, height } = primaryDisplay.workAreaSize;
+            
+            // Position in top-right corner
+            const x = width - 320; // 320px from right edge
+            const y = 50; // 50px from top
+            
+            overlayWindow.setPosition(x, y);
+            return { success: true };
+        }
+        return { success: false, error: 'Overlay window not available' };
+    } catch (error) {
+        console.error('Error resetting overlay position:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+console.log('Eyeframe Overlay App started successfully!');

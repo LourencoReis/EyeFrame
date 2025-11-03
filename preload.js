@@ -52,6 +52,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Set overlay size manually
     setOverlaySize: (width, height) => ipcRenderer.invoke('set-overlay-size', { width, height }),
     
+    // Hide overlay window
+    hideOverlay: () => ipcRenderer.invoke('hide-overlay'),
+    
+    // Close overlay window
+    closeOverlay: () => ipcRenderer.invoke('close-overlay'),
+    
+    // Reset overlay position to default
+    resetOverlayPosition: () => ipcRenderer.invoke('reset-overlay-position'),
+    
     /**
      * Timer data APIs (for future use with real API)
      */

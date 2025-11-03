@@ -1,8 +1,8 @@
-# 🎮 Warframe Overlay
+# 🎮 Eyeframe
 
 A desktop overlay application for displaying Warframe world timers, built with Electron and JavaScript.
 
-![Warframe Overlay](https://via.placeholder.com/600x300?text=Add+Screenshot+Here)
+![Eyeframe](https://via.placeholder.com/600x300?text=Add+Screenshot+Here)
 
 ## ✨ Features
 
@@ -21,9 +21,9 @@ A desktop overlay application for displaying Warframe world timers, built with E
 
 ### Option 1: Download Release (Recommended)
 1. Go to [Releases](https://github.com/LourencoReis/warframe-overlay/releases)
-2. Download `warframe-overlay-win32-x64.zip`
+2. Download `eyeframe-win32-x64.zip`
 3. Extract the ZIP file anywhere you like
-4. Run `warframe-overlay.exe` or double-click `Run Warframe Overlay.bat`
+4. Run `eyeframe.exe` or double-click `Run Eyeframe.bat`
 
 ### Option 2: Build from Source
 ```bash

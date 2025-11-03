@@ -15,7 +15,7 @@ body {
 
 /* ===== SETTINGS WINDOW STYLES ===== */
 .settings-window {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #1e3a8a 100%);
     height: 100vh;
     overflow-y: auto;
 }
@@ -38,12 +38,12 @@ body {
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: #00d4ff;
-    text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    color: #60a5fa;
+    text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
 }
 
 .subtitle {
-    color: #b8bcc8;
+    color: #cbd5e1;
     font-size: 12px;
 }
 
@@ -61,8 +61,8 @@ body {
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 15px;
-    color: #00d4ff;
-    border-left: 3px solid #00d4ff;
+    color: #60a5fa;
+    border-left: 3px solid #60a5fa;
     padding-left: 10px;
 }
 
@@ -75,16 +75,16 @@ body {
     display: flex;
     align-items: center;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .checkbox-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(0, 212, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(59, 130, 246, 0.5);
 }
 
 .checkbox-item input[type="checkbox"] {
@@ -94,7 +94,7 @@ body {
 .checkmark {
     width: 20px;
     height: 20px;
-    border: 2px solid #00d4ff;
+    border: 2px solid #3b82f6;
     border-radius: 4px;
     margin-right: 12px;
     position: relative;
@@ -102,8 +102,8 @@ body {
 }
 
 .checkbox-item input[type="checkbox"]:checked + .checkmark {
-    background: #00d4ff;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    background: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
 }
 
 .checkbox-item input[type="checkbox"]:checked + .checkmark::after {
@@ -178,14 +178,14 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(45deg, #00d4ff, #0099cc);
+    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
     color: #ffffff;
-    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 .btn-secondary {
@@ -308,6 +308,15 @@ body {
     transform: scale(0.95);
 }
 
+.close-btn {
+    background: rgba(220, 38, 38, 0.8) !important;
+}
+
+.close-btn:hover {
+    background: rgba(220, 38, 38, 0.9) !important;
+    transform: scale(1.1);
+}
+
 /* Legacy support for minimize-btn class */
 .minimize-btn {
     background: rgba(255, 255, 255, 0.2);
@@ -408,9 +417,15 @@ body {
     color: #ffffff;
 }
 
-.timer-status:not(.day):not(.night):not(.warm):not(.cold) {
-    background: #00d4ff;
-    color: #1a1a2e;
+.timer-status.loading {
+    background: #6b7280;
+    color: #ffffff;
+    animation: pulse 2s infinite;
+}
+
+.timer-status:not(.day):not(.night):not(.warm):not(.cold):not(.arbitration):not(.loading) {
+    background: #3b82f6;
+    color: #ffffff;
 }
 
 .timer-countdown {
@@ -478,6 +493,11 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
 /* ===== OVERLAY SCROLLBAR STYLES ===== */

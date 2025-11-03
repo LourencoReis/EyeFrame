@@ -1,5 +1,5 @@
 {
-  "name": "warframe-overlay",
+  "name": "eyeframe",
   "version": "1.0.0",
   "description": "A desktop overlay app for Warframe world timers",
   "main": "main.js",
@@ -10,7 +10,7 @@
     "build": "electron-builder",
     "build-win": "electron-builder --win",
     "build-portable": "electron-builder --win portable",
-    "package": "electron-packager . warframe-overlay --platform=win32 --arch=x64 --out=dist --overwrite",
+    "package": "electron-packager . eyeframe --platform=win32 --arch=x64 --out=dist --overwrite",
     "dist": "npm run build",
     "pack": "electron-builder --dir",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -19,9 +19,10 @@
     "warframe",
     "overlay",
     "timers",
-    "electron"
+    "electron",
+    "eyeframe"
   ],
-  "author": "Warframe Overlay Developer",
+  "author": "Eyeframe Developer",
   "license": "ISC",
   "dependencies": {
     "electron-store": "^8.2.0"
