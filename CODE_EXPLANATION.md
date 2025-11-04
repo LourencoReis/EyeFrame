@@ -1,8 +1,8 @@
-# 🧠 How Your Warframe Overlay App Works - Complete Code Explanation
+# 🧠 How Your Eyeframe App Works - Complete Code Explanation
 
 ## 🏗️ Architecture Overview
 
-Your app uses **Electron**, which combines:
+Your Eyeframe app uses **Electron**, which combines:
 - **Chromium** (for rendering HTML/CSS/JavaScript)
 - **Node.js** (for system access and file operations)
 
@@ -19,6 +19,12 @@ Your app uses **Electron**, which combines:
 │   (renderer)    │    │  (IPC Bridge)   │
 └─────────────────┘    └─────────────────┘
 ```
+
+### 🎨 Key Design Features:
+- **Black-to-Dark-Blue Gradient**: Main settings window
+- **Simplified Overlay**: Shows all 4 timers by default
+- **Compact Layout**: Minimal padding for maximum timer visibility
+- **Two-Button Control**: Just Minimize and Close buttons
 
 ---
 
@@ -38,7 +44,7 @@ const Store = require('electron-store');
 - **`screen`**: Gets display information for window positioning
 - **`Store`**: Saves user settings to disk
 
-#### **Window Creation:**
+#### **Settings Window Creation:**
 ```javascript
 function createSettingsWindow() {
     settingsWindow = new BrowserWindow({
@@ -47,6 +53,7 @@ function createSettingsWindow() {
         autoHideMenuBar: true,     // ← Hides File/Edit/View menu
         menuBarVisible: false,     // ← Ensures no menu bar
         resizable: false,          // ← Fixed size window
+        title: 'Eyeframe Settings', // ← Updated app name
         webPreferences: {
             nodeIntegration: false,    // ← Security: no Node.js in renderer
             contextIsolation: true,    // ← Security: isolated contexts
@@ -56,14 +63,38 @@ function createSettingsWindow() {
 }
 ```
 
-**Why these settings matter:**
-- **Security**: `nodeIntegration: false` prevents renderer from directly accessing Node.js
-- **Communication**: `preload.js` provides a safe bridge between main and renderer
-- **UI**: `autoHideMenuBar` removes clutter from your app
+#### **Overlay Window Creation:**
+```javascript
+function createOverlayWindow() {
+    overlayWindow = new BrowserWindow({
+        width: 300,
+        height: 320,              // ← Increased to fit all 4 timers
+        minWidth: 250,
+        minHeight: 200,           // ← Ensures timers stay visible
+        maxWidth: 500,
+        maxHeight: 800,
+        x: width - 320,           // ← Top-right corner positioning
+        y: 20,
+        frame: false,             // ← No window frame
+        alwaysOnTop: true,        // ← Stays above all other windows
+        transparent: true,        // ← See-through background
+        skipTaskbar: true,        // ← Doesn't appear in taskbar
+        resizable: true,          // ← User can resize if needed
+    });
+    
+    overlayWindow.show();         // ← Auto-show overlay on startup
+}
+```
+
+**Key Overlay Features:**
+- **Always On Top**: Perfect for gaming - stays visible over Warframe
+- **Transparent**: Blends with your desktop/game
+- **No Frame**: Clean look without window borders
+- **Auto-positioned**: Appears in top-right corner automatically
 
 #### **IPC Handlers (Inter-Process Communication):**
 ```javascript
-// When renderer asks "get-settings", respond with saved data
+// Settings management
 ipcMain.handle('get-settings', () => {
     return store.get('timerSettings', {
         dailyReset: true,
@@ -73,20 +104,35 @@ ipcMain.handle('get-settings', () => {
     });
 });
 
-// When renderer says "save-settings", store them and notify overlay
 ipcMain.handle('save-settings', (event, settings) => {
-    store.set('timerSettings', settings);              // Save to disk
-    overlayWindow.webContents.send('settings-updated', settings); // Tell overlay
+    store.set('timerSettings', settings);
+    overlayWindow.webContents.send('settings-updated', settings);
     return { success: true };
+});
+
+// Overlay controls
+ipcMain.handle('close-overlay', () => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        overlayWindow.close();        // ← Completely closes overlay
+        return { success: true };
+    }
+});
+
+ipcMain.handle('reset-overlay-position', () => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        const { screen } = require('electron');
+        const { width } = screen.getPrimaryDisplay().workAreaSize;
+        overlayWindow.setPosition(width - 320, 50); // ← Top-right corner
+        return { success: true };
+    }
 });
 ```
 
-**The Flow:**
-1. User changes settings in settings window
-2. Settings window sends IPC message to main process
-3. Main process saves settings to disk
-4. Main process forwards settings to overlay window
-5. Overlay window updates its display
+**The Communication Flow:**
+1. **User Action** → Settings window detects checkbox change
+2. **Settings Window** → Sends `save-settings` to main process  
+3. **Main Process** → Saves to disk + forwards to overlay
+4. **Overlay Window** → Receives `settings-updated` and refreshes display
 
 ---
 
@@ -96,16 +142,28 @@ ipcMain.handle('save-settings', (event, settings) => {
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
+    // Settings API
     getSettings: () => ipcRenderer.invoke('get-settings'),
     saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
-    // ... more functions
+    
+    // Overlay Controls
+    closeOverlay: () => ipcRenderer.invoke('close-overlay'),
+    resetOverlayPosition: () => ipcRenderer.invoke('reset-overlay-position'),
+    
+    // Event Listeners
+    onSettingsUpdated: (callback) => {
+        ipcRenderer.on('settings-updated', (event, settings) => callback(settings));
+    },
+    removeSettingsListener: () => {
+        ipcRenderer.removeAllListeners('settings-updated');
+    }
 });
 ```
 
 **What this does:**
 - **`contextBridge`**: Safely exposes functions to renderer processes
 - **`ipcRenderer`**: Sends messages TO the main process
-- **`invoke`**: Sends a message and waits for a response
+- **`invoke`**: Sends a message and waits for a response (async)
 - **`on`**: Listens for messages FROM the main process
 
 **Security Model:**
@@ -114,9 +172,14 @@ Renderer Process          Preload.js          Main Process
 ┌─────────────┐          ┌──────────┐          ┌──────────┐
 │ Can't access│   Safe   │  Bridge  │   Full   │ Node.js  │
 │   Node.js   │◄────────►│          │◄────────►│  Access  │
-│ (Sandboxed) │          │          │          │          │
+│ (Sandboxed) │          │Functions │          │          │
 └─────────────┘          └──────────┘          └──────────┘
 ```
+
+**Why this matters:**
+- Renderer processes can't directly access file system or system APIs
+- All communication goes through the secure preload bridge
+- Main process has full system access but is isolated from web content
 
 ---
 
@@ -184,7 +247,40 @@ async function handleFormSubmit(event) {
 
 ```html
 <div class="overlay-header">
-    <span class="overlay-title">Warframe Timers</span>
+    <span class="overlay-title">Eyeframe</span>
+    <div class="overlay-controls">
+        <button class="control-btn" id="minimizeBtn" title="Minimize">−</button>
+        <button class="control-btn close-btn" id="closeBtn" title="Close">✕</button>
+    </div>
+</div>
+
+<div class="overlay-content">
+    <!-- All 4 timers are always visible -->
+    <div class="timer-item" id="dailyResetTimer">
+        <div class="timer-header">
+            <span class="timer-name">Daily Reset</span>
+            <span class="timer-status">Active</span>
+        </div>
+        <div class="timer-countdown">3h 48m remaining</div>
+    </div>
+    
+    <div class="timer-item" id="cetusTimer">
+        <div class="timer-header">
+            <span class="timer-name">Cetus Cycle</span>
+            <span class="timer-status day">Day</span>
+        </div>
+        <div class="timer-countdown">1h 28m remaining</div>
+    </div>
+    
+    <!-- Fortuna and Arbitration timers always shown too -->
+</div>
+```
+
+**Key Design Changes:**
+- **Simplified Controls**: Only minimize (−) and close (✕) buttons
+- **Always Show All**: All 4 timers visible regardless of settings
+- **Compact Layout**: Reduced padding and spacing for better fit
+- **Red Close Button**: Visual distinction for the close action
     <div class="overlay-controls">
         <button class="control-btn" id="expandBtn" title="Expand">↕</button>
         <button class="control-btn" id="collapseBtn" title="Collapse">↔</button>
@@ -211,6 +307,29 @@ async function handleFormSubmit(event) {
 
 ### 6. **renderer/overlay.js** - Overlay Window Logic
 
+#### **Simplified Display Logic:**
+```javascript
+function updateTimerDisplay() {
+    // Always show all timers regardless of settings
+    updateTimerItem('dailyResetTimer', timerData.dailyReset || getDefaultTimerData('dailyReset'));
+    updateTimerItem('cetusTimer', timerData.cetusCycle || getDefaultTimerData('cetusCycle'));
+    updateTimerItem('fortunaTimer', timerData.fortunaCycle || getDefaultTimerData('fortunaCycle'));
+    updateTimerItem('arbitrationTimer', timerData.arbitrationTimer || getDefaultTimerData('arbitrationTimer'));
+    
+    // Make all timer items visible
+    const timerItems = overlayContent.querySelectorAll('.timer-item');
+    timerItems.forEach(item => item.style.display = 'flex');
+    
+    // Hide no timers message since we always show timers
+    noTimersMessage.style.display = 'none';
+}
+```
+
+**Key Changes from Original:**
+- **No Settings-Based Hiding**: All 4 timers always visible
+- **Default Data Fallback**: Shows "Loading..." if real data unavailable
+- **No Dynamic Resizing**: Fixed window size fits all timers
+
 #### **Timer Data Simulation:**
 ```javascript
 function simulateTimeProgression() {
@@ -230,28 +349,32 @@ function simulateTimeProgression() {
 - **State Calculation**: Compare position to determine current state
 - **Remaining Time**: Subtract current position from next state change
 
-#### **Dynamic Updates:**
+#### **Simplified Button Controls:**
 ```javascript
-function updateTimerDisplay() {
-    let visibleTimers = 0;
+function setupEventListeners() {
+    // Only two buttons now
+    minimizeBtn.addEventListener('click', toggleMinimize);
+    closeBtn.addEventListener('click', closeOverlay);
+}
+
+function toggleMinimize() {
+    isMinimized = !isMinimized;
     
-    // Show/hide based on user settings
-    if (currentSettings.dailyReset && timerData.dailyReset) {
-        updateTimerItem('dailyResetTimer', timerData.dailyReset);
-        visibleTimers++;
-    }
-    
-    // Only resize if timer count changed (performance optimization)
-    if (visibleTimers !== lastTimerCount) {
-        resizeOverlayWindow(visibleTimers);
-        lastTimerCount = visibleTimers;
+    if (isMinimized) {
+        overlayContent.style.display = 'none';  // Hide content
+        minimizeBtn.textContent = '+';          // Show restore icon
+        minimizeBtn.title = 'Restore';
+    } else {
+        overlayContent.style.display = 'block'; // Show content
+        minimizeBtn.textContent = '−';          // Show minimize icon
+        minimizeBtn.title = 'Minimize';
     }
 }
-```
 
-#### **Window Resizing:**
-```javascript
-async function resizeOverlayWindow(timerCount) {
+function closeOverlay() {
+    window.electronAPI.closeOverlay(); // Call main process to close window
+}
+```
     try {
         const result = await window.electronAPI.resizeOverlay(timerCount);
         // This calls main.js which calculates: headerHeight + (timerCount * itemHeight) + padding
@@ -274,27 +397,100 @@ async function resizeOverlayWindow(timerCount) {
     border-radius: 12px;                   /* Rounded corners */
     -webkit-app-region: drag;              /* Make window draggable */
 }
+### 7. **renderer/style.css** - Complete Visual Design
+
+#### **Main App: Black-to-Blue Gradient:**
+```css
+.settings-window {
+    background: linear-gradient(135deg, #000000 0%, #1a1a2e 50%, #1e3a8a 100%);
+    height: 100vh;
+    overflow-y: auto;
+}
+```
+
+**Gradient Breakdown:**
+- **#000000**: Pure black at top-left
+- **#1a1a2e**: Dark navy in middle  
+- **#1e3a8a**: Dark blue at bottom-right
+- **135deg**: Diagonal gradient direction
+
+#### **Compact Overlay Design:**
+```css
+.overlay-content {
+    padding: 8px;                       /* Reduced from 15px */
+    min-height: 40px;                   /* Reduced from 60px */
+    max-height: calc(100vh - 60px);     /* Reduced header space */
+}
+
+.timer-item {
+    padding: 8px;                       /* Reduced from 12px */
+    margin-bottom: 4px;                 /* Reduced from 8px */
+    min-height: 45px;                   /* Reduced from 60px */
+    border-radius: 6px;                 /* Slightly smaller radius */
+}
+
+.overlay-header {
+    padding: 6px 10px;                  /* Reduced from 8px 12px */
+}
+```
+
+**Space Optimization:**
+- **7px saved** from content padding
+- **15px saved** per timer item
+- **4px saved** from margins
+- **2px saved** from header = **~30px total saved**
+
+#### **Enhanced Button Styling:**
+```css
+.control-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.close-btn {
+    background: rgba(220, 38, 38, 0.8) !important;  /* Red background */
+}
+
+.close-btn:hover {
+    background: rgba(220, 38, 38, 0.9) !important;
+    transform: scale(1.1);                          /* Grow on hover */
+}
 ```
 
 #### **Timer Status Colors:**
 ```css
-.timer-status.day { background: #ffd700; }     /* Gold for day */
-.timer-status.night { background: #4a4a8a; }   /* Purple for night */
-.timer-status.warm { background: #ff6b35; }    /* Orange for warm */
-.timer-status.cold { background: #00a8cc; }    /* Blue for cold */
+.timer-status.day { background: #ffd700; }         /* Gold for day */
+.timer-status.night { background: #4a4a8a; }       /* Purple for night */
+.timer-status.warm { background: #ff6b35; }        /* Orange for warm */
+.timer-status.cold { background: #00a8cc; }        /* Blue for cold */
 .timer-status.arbitration { background: #9c27b0; } /* Purple for arbitration */
+.timer-status.loading { 
+    background: #6b7280; 
+    animation: pulse 2s infinite;                   /* Pulsing loading state */
+}
 ```
 
-#### **Responsive Design:**
+#### **Blue Theme Consistency:**
 ```css
-.overlay-content {
-    overflow-y: auto;                    /* Scroll if content too tall */
-    max-height: calc(100vh - 100px);    /* Never exceed screen height */
+.header h1 {
+    color: #60a5fa;                                 /* Light blue headers */
+    text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
 }
 
-.timer-item {
-    min-height: 60px;                   /* Consistent timer height */
-    margin-bottom: 8px;                 /* Space between timers */
+.checkmark {
+    border: 2px solid #3b82f6;                      /* Blue checkbox border */
+}
+
+.checkbox-item input[type="checkbox"]:checked + .checkmark {
+    background: #3b82f6;                            /* Blue when checked */
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #3b82f6, #1d4ed8); /* Blue gradient buttons */
 }
 ```
 
@@ -352,7 +548,49 @@ Settings Window ←─── IPC ───→ Main Process ←─── IPC ─�
 
 ---
 
-## 🛡️ Security Features
+## � How Everything Works Together
+
+### **App Startup Sequence:**
+1. **main.js** starts Electron app
+2. Creates settings window and overlay window  
+3. **Overlay automatically shows** in top-right corner
+4. Both windows load their HTML files
+5. HTML files load their respective JavaScript files
+6. JavaScript files set up event listeners
+7. Settings are loaded from disk and applied
+8. **All 4 timers display immediately** with simulated data
+
+### **Simplified User Flow:**
+```
+User opens Eyeframe
+        ↓
+Settings window appears (black-to-blue gradient)
+        ↓  
+Overlay appears automatically (top-right, showing all timers)
+        ↓
+User can minimize overlay content (− button)
+        ↓
+User can close overlay completely (✕ button)
+        ↓
+Settings still control preferences but don't hide timers
+```
+
+### **Timer Update Cycle:**
+```
+Every 1 second (UPDATE_INTERVAL):
+        ↓
+simulateTimeProgression() calculates current time
+        ↓
+Updates all timer states (Day/Night, Warm/Cold, etc.)
+        ↓
+updateTimerDisplay() refreshes all 4 timer items
+        ↓
+UI shows latest countdown and status
+```
+
+---
+
+## �🛡️ Security Features
 
 ### **Process Isolation:**
 - **Main Process**: Full system access, handles file I/O and IPC
@@ -371,19 +609,19 @@ process.exit()                       // ❌ Blocked
 
 ## 🎯 Performance Optimizations
 
-### **Efficient Updates:**
-```javascript
-// Only resize when timer count actually changes
-if (visibleTimers !== lastTimerCount) {
-    resizeOverlayWindow(visibleTimers);
-    lastTimerCount = visibleTimers;
-}
-```
+### **Simplified Logic:**
+- **No Dynamic Resizing**: Fixed window size eliminates complexity
+- **Always Show All**: No conditional rendering reduces CPU usage
+- **Minimal DOM Updates**: Only update timer text, not visibility
 
 ### **CSS Transitions:**
 ```css
 .timer-item {
     transition: all 0.3s ease;  /* Smooth animations without JavaScript */
+}
+
+.control-btn:hover {
+    transform: scale(1.1);      /* Hardware-accelerated hover effects */
 }
 ```
 
@@ -402,11 +640,38 @@ window.addEventListener('beforeunload', () => {
 
 ## 🔧 Why This Architecture Works
 
-1. **Separation of Concerns**: Each file has a specific job
-2. **Security**: Renderer processes can't access system directly
-3. **Maintainability**: Easy to modify individual components
-4. **Performance**: Optimized updates and memory usage
-5. **User Experience**: Responsive UI with smooth animations
-6. **Reliability**: Proper error handling and cleanup
+### **Key Technical Achievements:**
 
-This architecture makes your app professional-grade and ready for real-world use! 🚀
+1. **Security**: Proper IPC bridge prevents direct Node.js access from renderers
+2. **Performance**: Efficient timer updates with minimal DOM manipulation  
+3. **UX**: Always-on-top overlay perfect for gaming
+4. **Design**: Cohesive blue theme with compact, space-efficient layout
+5. **Simplicity**: Reduced from 6 buttons to 2 essential controls
+6. **Reliability**: All timers always visible - no confusing hide/show logic
+
+### **Professional Software Practices:**
+
+- **Separation of Concerns**: Each file has a specific responsibility
+- **Event-Driven Architecture**: Changes propagate through IPC messages automatically
+- **Persistent Storage**: Settings saved to disk survive app restarts  
+- **Modular Design**: Easy to add new timers by following existing patterns
+- **Cross-Platform**: Electron ensures compatibility across Windows, Mac, Linux
+- **User-Centered**: Simplified interface prioritizes essential functions
+
+---
+
+## 🎯 **Summary: Your Eyeframe App**
+
+You've built a **professional-grade desktop application** with:
+
+- **Dual-window architecture** (settings + overlay)
+- **Secure IPC communication** between processes
+- **Persistent settings storage** with electron-store  
+- **Real-time timer simulation** with mathematical precision
+- **Beautiful UI design** with gradients and animations
+- **Game-friendly overlay** that stays on top
+- **Simplified, intuitive controls** for end users
+
+**Total lines of code: ~1000+** across 8 main files, showcasing modern JavaScript, Electron APIs, advanced CSS, and software architecture best practices! 
+
+This architecture makes your Eyeframe app professional-grade and ready for real-world distribution! 🚀✨
