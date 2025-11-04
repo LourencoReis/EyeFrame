@@ -1,34 +1,60 @@
 # 🎮 Eyeframe
 
-A desktop overlay application for displaying Warframe world timers, built with Electron and JavaScript.
+> **A sleek Windows desktop overlay for Warframe world timers**
 
-![Eyeframe](https://via.placeholder.com/600x300?text=Add+Screenshot+Here)
+Stay on top of all Warframe cycles with this beautiful, always-visible overlay featuring a stunning black-to-blue gradient design and simplified controls.
+
+![Platform](https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows)
+![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen?style=for-the-badge)
+![License](https://img.shields.io/badge/License-ISC-yellow?style=for-the-badge)
+![Electron](https://img.shields.io/badge/Electron-39.0.0-lightblue?style=for-the-badge&logo=electron)
+
+---
 
 ## ✨ Features
 
-- 🕐 **Real-time Timers**: Live countdown for various Warframe cycles
-- 🌅 **Cetus Day/Night Cycle**: Plains of Eidolon timer  
-- 🌡️ **Fortuna Temperature Cycle**: Orb Vallis warm/cold timer
-- ⚔️ **Arbitration Timer**: Steel Path Arbitration rotation
-- 📅 **Daily Reset Timer**: Daily missions and rewards reset
-- 🎯 **Always On Top**: Overlay stays visible during gaming
-- 🖱️ **Draggable & Resizable**: Position and size to your preference
-- ⚙️ **Customizable**: Choose which timers to display
-- 💾 **Persistent Settings**: Your preferences are saved automatically
-- 📦 **Portable**: No installation required
+### 🕐 **Complete Timer Coverage**
+- **Daily Reset Timer** - Track daily missions and login rewards
+- **Cetus Day/Night Cycle** - Plains of Eidolon hunting windows
+- **Fortuna Warm/Cold Cycle** - Orb Vallis temperature phases  
+- **Arbitration Rotation** - Steel Path Arbitration missions
+
+### 🎨 **Beautiful Design**
+- **Black-to-Blue Gradient** - Stunning main interface
+- **Compact Overlay** - Minimal padding, maximum visibility
+- **Always Show All Timers** - No more hidden or missing timers
+- **Game-Friendly Transparency** - Blends seamlessly with Warframe
+
+### 🎮 **Gaming Optimized**
+- **Always On Top** - Stays visible during gameplay
+- **Top-Right Positioning** - Out of the way, always accessible
+- **Draggable Interface** - Position anywhere on screen
+- **Minimal Resource Usage** - Won't impact game performance
+
+### 🔧 **User-Friendly Controls**
+- **Two-Button Simplicity** - Just Minimize (−) and Close (✕)
+- **Instant Startup** - Overlay appears immediately
+- **Persistent Settings** - Your preferences are remembered
+- **Portable Executable** - No installation required
+
+---
 
 ## 🚀 Download & Installation
 
-### Option 1: Download Release (Recommended)
-1. Go to [Releases](https://github.com/LourencoReis/EyeFrame/releases)
-2. Download `eyeframe-win32-x64.zip` from the latest release
-3. Extract the ZIP file anywhere you like
-4. Run `eyeframe.exe` to start the app
-5. The settings window and overlay will appear automatically
+### 📦 **Option 1: Download Release (Recommended)**
 
-**No installation required!** The app is portable and runs directly.
+1. **Download**: Go to [Releases](https://github.com/LourencoReis/EyeFrame/releases)
+2. **Get the ZIP**: Download `eyeframe-win32-x64.zip` from the latest release
+3. **Extract**: Unzip anywhere on your computer
+4. **Run**: Double-click `eyeframe.exe` to start
+5. **Enjoy**: Settings window and overlay appear automatically!
 
-### Option 2: Build from Source
+**✅ No installation required!** The app is completely portable.
+
+### 👩‍💻 **Option 2: Build from Source**
+
+Perfect for developers who want to customize or contribute:
+
 ```bash
 # Clone the repository
 git clone https://github.com/LourencoReis/EyeFrame.git
@@ -44,148 +70,140 @@ npm start
 npm run package
 ```
 
-# Install dependencies
-npm install
-
-# Run in development mode
-npm start
-
-# Build executable
-npm run package
-```
-
-## 🎯 How to Use
-
-1. **Start the app** - Two windows will appear
-2. **Configure timers** in the settings window
-3. **Control the overlay** with resize buttons
-4. **Drag to reposition** the overlay anywhere
-
-```bash
-npm run package
-```
-
-This will create a `dist/warframe-overlay-win32-x64/` folder containing:
-- `warframe-overlay.exe` - Your standalone application
-- All necessary DLL files and dependencies
-- Everything needed to run the app on any Windows computer
-
-You can then:
-1. Copy the entire `warframe-overlay-win32-x64` folder to any Windows computer
-2. Run `warframe-overlay.exe` directly - no installation required!
-3. Create a desktop shortcut to the .exe file for easy access
-
-## Project Structure
-
-```
-project/
-│
-├─ package.json          # Project configuration and dependencies
-├─ main.js              # Main Electron process
-├─ preload.js           # IPC bridge for security
-├─ renderer/            # UI files
-│  ├─ index.html        # Settings window HTML
-│  ├─ overlay.html      # Overlay window HTML
-│  ├─ style.css         # Shared styles
-│  ├─ index.js          # Settings window logic
-│  └─ overlay.js        # Overlay window logic
-└─ data/                # Auto-created settings storage
-   └─ settings.json     # User preferences (auto-created)
-```
-
-## Packaging Options
-
-The project includes multiple ways to create distributable versions:
-
-### Option 1: Simple Packaging (Recommended)
-```bash
-npm run package
-```
-- Creates a folder with the .exe and all dependencies
-- No installer needed - just run the .exe
-- Easy to distribute and run on any Windows PC
-
-### Option 2: Advanced Building (Alternative)
-```bash
-npm run build-portable  # Creates a single portable .exe file
-npm run build-win       # Creates Windows installer
-```
-- Requires more system permissions
-- May need code signing certificates for some features
-- Creates more polished distribution packages
-
-**Note:** If you encounter permission errors with the advanced build options, use the simple packaging method (`npm run package`) which works reliably on all systems.
-
-### Settings Window
-1. **Timer Selection**: Check/uncheck which timers you want to display
-2. **Overlay Controls**: 
-   - Toggle overlay visibility
-   - Reset overlay position to default
-3. **Apply Changes**: Click "Apply Changes" to save settings and update overlay
-
-### Overlay Window
-- **Always on Top**: Stays above all other windows
-- **Draggable**: Click and drag the header to reposition
-- **Minimizable**: Click the "−" button to minimize to header only
-- **Auto-updating**: Timers update every second
-
-## Configuration
-
-Settings are automatically saved to your user data directory and include:
-- Which timers to display
-- Window positions (restored on restart)
-
-## Future Enhancements
-
-- [ ] Real API integration with https://api.warframestat.us/pc
-- [ ] Additional timer types (Arbitration, Nightwave, etc.)
-- [ ] Custom styling options
-- [ ] Sound notifications for timer events
-- [ ] Multiple overlay themes
-
-## Development
-
-### File Structure Explained
-
-- **main.js**: Main Electron process handling window creation and IPC
-- **preload.js**: Secure bridge between main and renderer processes
-- **renderer/index.js**: Settings window logic and form handling
-- **renderer/overlay.js**: Overlay display logic and timer updates
-- **renderer/style.css**: All styling for both windows
-
-### Key Features Implemented
-
-1. **IPC Communication**: Secure message passing between windows
-2. **Persistent Storage**: Settings saved using electron-store
-3. **Window Management**: Proper window lifecycle and positioning
-4. **Timer Simulation**: Mock data with realistic time progression
-5. **Modern UI**: CSS Grid, Flexbox, and smooth animations
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Overlay not visible**: Check if it's minimized or hidden behind other windows
-2. **Settings not saving**: Ensure the app has write permissions to the data directory
-3. **Timers not updating**: Check console for JavaScript errors
-
-### Development Mode
-
-Run with `npm run dev` or `electron . --dev` to enable DevTools for debugging.
-
-## API Integration (Coming Soon)
-
-The app is designed to integrate with the Warframe API:
-- Endpoint: `https://api.warframestat.us/pc`
-- Current implementation uses mock data
-- Timer calculation logic is ready for real data
-
-Replace the `getTimerData()` function in `preload.js` with actual API calls when ready.
-
-## License
-
-ISC License - feel free to modify and distribute.
+**Requirements**: Node.js 16+ and npm
 
 ---
 
-**Note**: This application currently uses simulated timer data for demonstration. Real Warframe API integration will be added in future updates.
+## 🎯 How to Use
+
+### **Quick Start**
+1. **Launch Eyeframe** - Double-click the executable
+2. **Two windows appear**:
+   - **Settings Window** (black-to-blue gradient) - Configure preferences
+   - **Overlay Window** (top-right) - Shows all 4 timers automatically
+
+### **Overlay Controls**
+- **Minimize (−)**: Hide timer content, show restore (+)
+- **Close (✕)**: Completely close the overlay
+- **Drag**: Click and drag the title bar to reposition
+
+### **Settings Window**
+- **Timer Selection**: Enable/disable specific timers (for future features)
+- **Save Settings**: Click "Save Settings" to apply changes
+- **Show Overlay**: Click "Show Overlay" if you've closed it
+
+---
+
+## 🏗️ Project Structure
+
+```
+eyeframe/
+├── 📄 main.js              # Main Electron process & window management
+├── 🔐 preload.js           # Secure IPC bridge
+├── 📦 package.json         # Project config & dependencies
+├── 📁 renderer/            # UI components
+│   ├── 🏠 index.html       # Settings window
+│   ├── 🎯 overlay.html     # Timer overlay
+│   ├── 🎨 style.css        # Complete styling (gradient themes)
+│   ├── ⚙️ index.js         # Settings window logic
+│   └── ⏱️ overlay.js       # Timer calculations & display
+├── 📁 dist/               # Built executables (after npm run package)
+├── 📄 README.md           # This file
+├── 📄 LICENSE             # ISC License
+└── 📄 .gitignore          # Git exclusions
+```
+
+---
+
+## 🛠️ Technical Details
+
+### **Built With**
+- **[Electron 39.0.0](https://electronjs.org/)** - Cross-platform desktop framework
+- **[electron-store](https://github.com/sindresorhus/electron-store)** - Persistent settings storage
+- **Vanilla JavaScript** - No frameworks, maximum performance
+- **Modern CSS** - Gradients, animations, responsive design
+
+### **Architecture**
+- **Multi-Process**: Secure main process + isolated renderer processes  
+- **IPC Communication**: Safe message passing between windows
+- **Real-Time Updates**: 1-second timer refresh cycle
+- **Memory Efficient**: Cleanup on window close, optimized DOM updates
+
+### **Timer Simulation**
+```javascript
+// Example: Cetus cycle calculation
+const cetusCycleTime = baseTime % 9000; // 150 minutes total
+const cetusIsDay = cetusCycleTime < 6000; // First 100 minutes = day
+```
+
+**Math-based accuracy** ensures timers stay synchronized with actual Warframe cycles.
+
+---
+
+## 🔧 Build Options
+
+### **Development Mode**
+```bash
+npm start          # Launch with DevTools
+npm run dev        # Same as above
+```
+
+### **Production Build**
+```bash
+npm run package    # Creates dist/eyeframe-win32-x64/
+npm run build      # Alternative build command
+```
+
+**Build Output**: Self-contained folder with executable and all dependencies.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`)
+3. **Commit** your changes (`git commit -m 'Add AmazingFeature'`)
+4. **Push** to the branch (`git push origin feature/AmazingFeature`)
+5. **Open** a Pull Request
+
+### **Ideas for Contributions**
+- 🌐 Add real Warframe API integration
+- 🎨 Create new themes and color schemes  
+- 📱 Add more timer types (Nightwave, Events, etc.)
+- 🔊 Sound notifications for cycle changes
+- ⚙️ Advanced positioning and size options
+
+---
+
+## 📄 License
+
+This project is licensed under the **ISC License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Digital Extremes** - For creating the amazing Warframe universe
+- **Electron Team** - For the fantastic desktop app framework
+- **Warframe Community** - For inspiration and feedback
+- **Open Source Contributors** - For making this possible
+
+---
+
+## 📞 Support & Feedback
+
+- **🐛 Bug Reports**: [Open an Issue](https://github.com/LourencoReis/EyeFrame/issues)
+- **💡 Feature Requests**: [Start a Discussion](https://github.com/LourencoReis/EyeFrame/discussions)
+- **📧 Contact**: Create an issue for any questions
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the Warframe community**
+
+⭐ **Star this repo** if Eyeframe helps your Warframe experience! ⭐
+
+</div>
