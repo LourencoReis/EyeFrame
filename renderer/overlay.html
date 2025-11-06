@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eyeframe Timers</title>
     <link rel="stylesheet" href="style.css">
+    <script src="warframe-api.js"></script>
 </head>
 <body class="overlay-window">
     <!-- Draggable Header -->
@@ -18,37 +19,254 @@
 
     <!-- Timer Content -->
     <div class="overlay-content" id="overlayContent">
-        <!-- Timer items will be dynamically generated here -->
-        <div class="timer-item" id="dailyResetTimer">
-            <div class="timer-header">
-                <span class="timer-name">Daily Reset</span>
-                <span class="timer-status">Active</span>
+        <!-- Main Timers Section -->
+        <div class="timers-section">
+            <h3 class="section-title"><img src="images/planets/warframe.png" class="section-icon" alt="Earth"> World Timers</h3>
+            
+            <div class="timer-item" id="dailyResetTimer">
+                <img src="images/planets/earth.png" class="timer-icon" alt="Earth" onerror="this.style.display='none'">
+                <div class="timer-info">
+                    <div class="timer-header">
+                        <span class="timer-name">Daily Reset</span>
+                    </div>
+                    <div class="timer-countdown">Calculating...</div>
+                </div>
             </div>
-            <div class="timer-countdown">2h 34m remaining</div>
+
+            <div class="timer-item" id="weeklyResetTimer">
+                <img src="images/planets/earth.png" class="timer-icon" alt="Earth" onerror="this.style.display='none'">
+                <div class="timer-info">
+                    <div class="timer-header">
+                        <span class="timer-name">Weekly Reset</span>
+                    </div>
+                    <div class="timer-countdown">Calculating...</div>
+                </div>
+            </div>
+
+            <div class="timer-item" id="cetusTimer">
+                <img src="images/planets/cetus.png" class="timer-icon" alt="Cetus" onerror="this.style.display='none'">
+                <div class="timer-info">
+                    <div class="timer-header">
+                        <span class="timer-name">Cetus</span>
+                        <span class="timer-status day">Day</span>
+                    </div>
+                    <div class="timer-countdown">1h 15m remaining</div>
+                </div>
+            </div>
+
+            <div class="timer-item" id="fortunaTimer">
+                <img src="images/planets/fortuna2.png" class="timer-icon" alt="Fortuna" onerror="this.style.display='none'">
+                <div class="timer-info">
+                    <div class="timer-header">
+                        <span class="timer-name">Fortuna</span>
+                        <span class="timer-status warm">Warm</span>
+                    </div>
+                    <div class="timer-countdown">45m remaining</div>
+                </div>
+            </div>
+
+            <div class="timer-item" id="arbitrationTimer">
+                <img src="images/planets/arbitration.png" class="timer-icon" alt="Arbitration" onerror="this.style.display='none'">
+                <div class="timer-info">
+                    <div class="timer-header">
+                        <span class="timer-name">Arbitration</span>
+                        <span class="timer-status arbitration">Active</span>
+                    </div>
+                    <div class="timer-countdown">2h 15m remaining</div>
+                </div>
+            </div>
         </div>
 
-        <div class="timer-item" id="cetusTimer">
-            <div class="timer-header">
-                <span class="timer-name">Cetus</span>
-                <span class="timer-status day">Day</span>
+        <!-- Void Fissures Section -->
+        <div class="fissures-section">
+            <h3 class="section-title"><img src="images/fissures/voidfissure.png" alt="Void Fissures"> Void Fissures</h3>
+            <div class="fissure-tabs">
+                <button class="tab active" data-tab="normal-fissures">Normal</button>
+                <button class="tab" data-tab="steel-fissures">Steel Path</button>
             </div>
-            <div class="timer-countdown">1h 15m remaining</div>
+            
+            <div class="fissure-list" id="normalFissures">
+                <div class="fissure-item">
+                    <img src="images/fissures/lith.png" class="fissure-icon" alt="Lith" onerror="this.style.display='none'">
+                    <div class="fissure-info">
+                        <div class="fissure-tier">🔸 Lith</div>
+                        <div class="fissure-mission">Defense (Tessera, Venus)</div>
+                        <div class="fissure-timer">52m 55s</div>
+                    </div>
+                </div>
+                
+                <div class="fissure-item">
+                    <img src="images/fissures/meso.png" class="fissure-icon" alt="Meso" onerror="this.style.display='none'">
+                    <div class="fissure-info">
+                        <div class="fissure-tier">🔹 Meso</div>
+                        <div class="fissure-mission">Survival (Elara, Jupiter)</div>
+                        <div class="fissure-timer">16m 20s</div>
+                    </div>
+                </div>
+                
+                <div class="fissure-item">
+                    <img src="images/fissures/neo.png" class="fissure-icon" alt="Neo" onerror="this.style.display='none'">
+                    <div class="fissure-info">
+                        <div class="fissure-tier">🔷 Neo</div>
+                        <div class="fissure-mission">Mobile Def. (Aten, Void)</div>
+                        <div class="fissure-timer">1h 14m 58s</div>
+                    </div>
+                </div>
+                
+                <div class="fissure-item">
+                    <img src="images/fissures/axi.png" class="fissure-icon" alt="Axi" onerror="this.style.display='none'">
+                    <div class="fissure-info">
+                        <div class="fissure-tier">🔶 Axi</div>
+                        <div class="fissure-mission">Capture (Isos, Eris)</div>
+                        <div class="fissure-timer">1h 19m 58s</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fissure-list" id="steelFissures" style="display: none;">
+                <div class="fissure-item steel-path">
+                    <img src="images/fissures/requiem.png" class="fissure-icon" alt="Requiem" onerror="this.style.display='none'">
+                    <div class="fissure-info">
+                        <div class="fissure-tier"><img src="images/planets/requiem.png" alt="Requiem"></div>
+                        <div class="fissure-mission">Survival (Steel Path)</div>
+                        <div class="fissure-timer">45m 30s</div>
+                    </div>
+                </div>
+                <!-- More steel path fissures... -->
+            </div>
         </div>
 
-        <div class="timer-item" id="fortunaTimer">
-            <div class="timer-header">
-                <span class="timer-name">Fortuna</span>
-                <span class="timer-status warm">Warm</span>
+        <!-- The Circuit Section -->
+        <div class="circuit-section">
+            <h3 class="section-title">🎯 The Circuit</h3>
+            <div class="circuit-tabs">
+                <button class="tab active" data-tab="normal-circuit">Normal</button>
+                <button class="tab" data-tab="steel-circuit">Steel Path</button>
             </div>
-            <div class="timer-countdown">45m remaining</div>
+            
+            <div class="circuit-content" id="normalCircuit">
+                <div class="reward-category">
+                    <h4>🤖 Warframes</h4>
+                    <div class="reward-grid">
+                        <div class="reward-item">
+                            <img src="images/circuit/warframes/garuda2.png" alt="Garuda" onerror="this.style.display='none'">
+                            <span>Garuda</span>
+                        </div>
+                        <div class="reward-item">
+                            <img src="images/circuit/warframes/baruuk.png" alt="Baruuk" onerror="this.style.display='none'">
+                            <span>Baruuk</span>
+                        </div>
+                        <div class="reward-item">
+                            <img src="images/circuit/warframes/hildryn.png" alt="Hildryn" onerror="this.style.display='none'">
+                            <span>Hildryn</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="reward-category">
+                    <h4>⚔️ Weapons</h4>
+                    <div class="reward-grid">
+                        <div class="reward-item">
+                            <img src="images/circuit/weapons/dera.png" alt="Dera" onerror="this.style.display='none'">
+                            <span>Dera</span>
+                        </div>
+                        <div class="reward-item">
+                            <img src="images/circuit/weapons/cestra.png" alt="Cestra" onerror="this.style.display='none'">
+                            <span>Cestra</span>
+                        </div>
+                        <div class="reward-item">
+                            <img src="images/circuit/weapons/okina.png" alt="Okina" onerror="this.style.display='none'">
+                            <span>Okina</span>
+                        </div>
+                        <div class="reward-item">
+                            <img src="images/circuit/weapons/sybaris.png" alt="Sybaris" onerror="this.style.display='none'">
+                            <span>Sybaris</span>
+                        </div>
+                        <div class="reward-item">
+                            <img src="images/circuit/weapons/sicarus.png" alt="Sicarus" onerror="this.style.display='none'">
+                            <span>Sicarus</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="circuit-content" id="steelCircuit" style="display: none;">
+                <div class="reward-category">
+                    <h4>🤖 Steel Path Warframes</h4>
+                    <div class="reward-grid">
+                        <div class="reward-item">
+                            <img src="images/circuit/warframes/wisp.png" alt="Wisp" onerror="this.style.display='none'">
+                            <span>Wisp</span>
+                        </div>
+                        <div class="reward-item">
+                            <img src="images/circuit/warframes/protea.png" alt="Protea" onerror="this.style.display='none'">
+                            <span>Protea</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="reward-category">
+                    <h4>⚔️ Steel Path Weapons</h4>
+                    <div class="reward-grid">
+                        <div class="reward-item">
+                            <img src="images/circuit/weapons/kuva-bramma.png" alt="Kuva Bramma" onerror="this.style.display='none'">
+                            <span>Kuva Bramma</span>
+                        </div>
+                        <div class="reward-item">
+                            <img src="images/circuit/weapons/tenet-cycron.png" alt="Tenet Cycron" onerror="this.style.display='none'">
+                            <span>Tenet Cycron</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="timer-item" id="arbitrationTimer">
-            <div class="timer-header">
-                <span class="timer-name">Arbitration</span>
-                <span class="timer-status arbitration">Active</span>
+        <!-- Alerts Section -->
+        <div class="alerts-section" id="alertsSection" style="display: none;">
+            <h3 class="section-title">🚨 Alerts</h3>
+            <div class="alerts-list" id="alertsList">
+                <!-- Dynamic content -->
             </div>
-            <div class="timer-countdown">2h 15m remaining</div>
+        </div>
+
+        <!-- Events Section -->
+        <div class="events-section" id="eventsSection" style="display: none;">
+            <h3 class="section-title">🎯 Events</h3>
+            <div class="events-list" id="eventsList">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- Invasions Section -->
+        <div class="invasions-section" id="invasionsSection" style="display: none;">
+            <h3 class="section-title">⚔️ Invasions</h3>
+            <div class="invasions-list" id="invasionsList">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- Sortie Section -->
+        <div class="sortie-section" id="sortieSection" style="display: none;">
+            <h3 class="section-title">🎖️ Sortie</h3>
+            <div class="sortie-content" id="sortieContent">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- Nightwave Section -->
+        <div class="nightwave-section" id="nightwaveSection" style="display: none;">
+            <h3 class="section-title">🌙 Nightwave</h3>
+            <div class="nightwave-content" id="nightwaveContent">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- Void Trader Section -->
+        <div class="voidtrader-section" id="voidtraderSection" style="display: none;">
+            <h3 class="section-title">🛒 Void Trader</h3>
+            <div class="voidtrader-content" id="voidtraderContent">
+                <!-- Dynamic content -->
+            </div>
         </div>
 
         <!-- No timers message (hidden by default) -->

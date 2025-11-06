@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eyeframe Timers</title>
+    <link rel="stylesheet" href="horizontal-style.css">
+    <script src="warframe-api.js"></script>
+</head>
+<body class="horizontal-overlay">
+    <!-- Draggable Header -->
+    <div class="horizontal-header" id="overlayHeader">
+        <span class="overlay-title">EYEFRAME</span>
+        <div class="overlay-controls">
+            <button class="control-btn" id="minimizeBtn" title="Minimize">−</button>
+            <button class="control-btn close-btn" id="closeBtn" title="Close">✕</button>
+        </div>
+    </div>
+
+    <!-- Horizontal Mission Bar -->
+    <div class="mission-bar" id="missionBar">
+        <!-- Daily Reset -->
+        <div class="mission-item" id="dailyResetItem">
+            <div class="mission-icon">📅</div>
+            <div class="mission-count" id="dailyResetCount">24h</div>
+        </div>
+
+        <!-- Weekly Reset -->
+        <div class="mission-item" id="weeklyResetItem">
+            <div class="mission-icon">📆</div>
+            <div class="mission-count" id="weeklyResetCount">7d</div>
+        </div>
+
+        <!-- Cetus Day/Night -->
+        <div class="mission-item" id="cetusItem">
+            <div class="mission-icon cetus-icon">🌅</div>
+            <div class="mission-count" id="cetusCount">1h</div>
+        </div>
+
+        <!-- Fortuna Warm/Cold -->
+        <div class="mission-item" id="fortunaItem">
+            <div class="mission-icon fortuna-icon">❄️</div>
+            <div class="mission-count" id="fortunaCount">26m</div>
+        </div>
+
+        <!-- Arbitration -->
+        <div class="mission-item" id="arbitrationItem">
+            <div class="mission-icon">⚖️</div>
+            <div class="mission-count" id="arbitrationCount">1h</div>
+        </div>
+
+        <!-- Archon Hunt -->
+        <div class="mission-item" id="archonHuntItem">
+            <div class="mission-icon">👑</div>
+            <div class="mission-count" id="archonHuntCount">3d</div>
+        </div>
+
+        <!-- Sortie -->
+        <div class="mission-item" id="sortieItem">
+            <div class="mission-icon">🎯</div>
+            <div class="mission-count" id="sortieCount">12h</div>
+        </div>
+
+        <!-- Void Fissures -->
+        <div class="mission-item fissure-group" id="fissureGroup">
+            <!-- Lith -->
+            <div class="fissure-tier" id="lithTier">
+                <div class="mission-icon fissure-icon">⚪</div>
+                <div class="mission-count" id="lithCount">0</div>
+            </div>
+            <!-- Meso -->
+            <div class="fissure-tier" id="mesoTier">
+                <div class="mission-icon fissure-icon">🟡</div>
+                <div class="mission-count" id="mesoCount">0</div>
+            </div>
+            <!-- Neo -->
+            <div class="fissure-tier" id="neoTier">
+                <div class="mission-icon fissure-icon">🔵</div>
+                <div class="mission-count" id="neoCount">0</div>
+            </div>
+            <!-- Axi -->
+            <div class="fissure-tier" id="axiTier">
+                <div class="mission-icon fissure-icon">🟠</div>
+                <div class="mission-count" id="axiCount">0</div>
+            </div>
+            <!-- Requiem -->
+            <div class="fissure-tier" id="requiemTier">
+                <div class="mission-icon fissure-icon">🔴</div>
+                <div class="mission-count" id="requiemCount">0</div>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="mission-item" id="alertsItem">
+            <div class="mission-icon">🚨</div>
+            <div class="mission-count" id="alertsCount">0</div>
+        </div>
+
+        <!-- Events -->
+        <div class="mission-item" id="eventsItem">
+            <div class="mission-icon">🎪</div>
+            <div class="mission-count" id="eventsCount">0</div>
+        </div>
+
+        <!-- Void Trader -->
+        <div class="mission-item" id="voidTraderItem">
+            <div class="mission-icon">🛒</div>
+            <div class="mission-count" id="voidTraderCount">2d</div>
+        </div>
+    </div>
+</body>
+<script src="horizontal-overlay.js"></script>
+</html>

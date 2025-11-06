@@ -51,13 +51,13 @@ function createOverlayWindow() {
     const { width, height } = primaryDisplay.workAreaSize;
 
     overlayWindow = new BrowserWindow({
-        width: 300,
-        height: 320,
-        minWidth: 250,
-        minHeight: 200,
-        maxWidth: 500,
-        maxHeight: 800,
-        x: width - 320, // Position near top-right corner
+        width: 380,
+        height: 720,
+        minWidth: 320,
+        minHeight: 600,
+        maxWidth: 480,
+        maxHeight: 900,
+        x: Math.max(0, width - 400), // Ensure it's not off-screen
         y: 20,
         frame: false,
         alwaysOnTop: true,
@@ -71,10 +71,22 @@ function createOverlayWindow() {
         }
     });
 
-    overlayWindow.loadFile(path.join(__dirname, 'renderer', 'overlay.html'));
+    console.log('Creating overlay window at position:', Math.max(0, width - 400), 20);
+    console.log('Screen dimensions:', width, 'x', height);
+
+        overlayWindow.loadFile('renderer/overlay.html');
 
     // Show the overlay window by default
     overlayWindow.show();
+    
+    // Add debugging for overlay window events
+    overlayWindow.webContents.on('did-finish-load', () => {
+        console.log('Overlay window finished loading');
+    });
+    
+    overlayWindow.webContents.on('console-message', (event, level, message) => {
+        console.log(`Overlay console [${level}]:`, message);
+    });
 
     // Make window draggable
     overlayWindow.setIgnoreMouseEvents(false);
@@ -124,6 +136,7 @@ app.on('window-all-closed', () => {
 ipcMain.handle('get-settings', () => {
     return store.get('timerSettings', {
         dailyReset: true,
+        weeklyReset: true,
         cetusCycle: true,
         fortunaCycle: true,
         arbitrationTimer: true
@@ -147,6 +160,37 @@ ipcMain.handle('save-settings', (event, settings) => {
 ipcMain.handle('set-overlay-position', (event, x, y) => {
     if (overlayWindow && !overlayWindow.isDestroyed()) {
         overlayWindow.setPosition(x, y);
+        return { success: true };
+    }
+    return { success: false };
+});
+
+// Handle window movement for dragging
+ipcMain.handle('move-window', (event, deltaX, deltaY) => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        const [currentX, currentY] = overlayWindow.getPosition();
+        overlayWindow.setPosition(currentX + deltaX, currentY + deltaY);
+        return { success: true };
+    }
+    return { success: false };
+});
+
+// Handle overlay minimize
+ipcMain.handle('minimize-overlay', () => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        overlayWindow.minimize();
+        return { success: true };
+    }
+    return { success: false };
+});
+
+// Handle overlay restore (from minimize)
+ipcMain.handle('restore-overlay', () => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        if (overlayWindow.isMinimized()) {
+            overlayWindow.restore();
+            overlayWindow.show();
+        }
         return { success: true };
     }
     return { success: false };

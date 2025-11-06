@@ -26,6 +26,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Set overlay window position
     setOverlayPosition: (x, y) => ipcRenderer.invoke('set-overlay-position', x, y),
     
+    // Move window by delta (for dragging)
+    moveWindow: (deltaX, deltaY) => ipcRenderer.invoke('move-window', deltaX, deltaY),
+    
     // Toggle overlay visibility
     toggleOverlay: (visible) => ipcRenderer.invoke('toggle-overlay', visible),
     
@@ -54,6 +57,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     
     // Hide overlay window
     hideOverlay: () => ipcRenderer.invoke('hide-overlay'),
+    
+    // Minimize overlay window
+    minimizeOverlay: () => ipcRenderer.invoke('minimize-overlay'),
+    
+    // Restore overlay window from minimize
+    restoreOverlay: () => ipcRenderer.invoke('restore-overlay'),
     
     // Close overlay window
     closeOverlay: () => ipcRenderer.invoke('close-overlay'),

@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Set up event listeners
     setupEventListeners();
+    
+    // Initialize overlay button text
+    toggleOverlayBtn.innerHTML = overlayVisible ? '👁️ Hide Overlay' : '🚀 Show Overlay';
 });
 
 /**
@@ -36,10 +39,11 @@ async function loadSettings() {
         console.log('Loaded settings:', settings);
         
         // Update checkboxes based on saved settings
-        document.getElementById('dailyReset').checked = settings.dailyReset || false;
-        document.getElementById('cetusCycle').checked = settings.cetusCycle || false;
-        document.getElementById('fortunaCycle').checked = settings.fortunaCycle || false;
-        document.getElementById('arbitrationTimer').checked = settings.arbitrationTimer || false;
+        document.getElementById('dailyReset').checked = settings.dailyReset !== false;
+        document.getElementById('weeklyReset').checked = settings.weeklyReset !== false;
+        document.getElementById('cetusCycle').checked = settings.cetusCycle !== false;
+        document.getElementById('fortunaCycle').checked = settings.fortunaCycle !== false;
+        document.getElementById('arbitrationTimer').checked = settings.arbitrationTimer !== false;
         
     } catch (error) {
         console.error('Error loading settings:', error);
@@ -83,6 +87,7 @@ async function handleFormSubmit(event) {
         // Collect form data
         const settings = {
             dailyReset: document.getElementById('dailyReset').checked,
+            weeklyReset: document.getElementById('weeklyReset').checked,
             cetusCycle: document.getElementById('cetusCycle').checked,
             fortunaCycle: document.getElementById('fortunaCycle').checked,
             arbitrationTimer: document.getElementById('arbitrationTimer').checked
@@ -135,17 +140,36 @@ function handleCheckboxChange(event) {
 async function handleToggleOverlay() {
     try {
         overlayVisible = !overlayVisible;
-        const result = await window.electronAPI.toggleOverlay(overlayVisible);
         
-        if (result.success) {
-            toggleOverlayBtn.textContent = overlayVisible ? 'Hide Overlay' : 'Show Overlay';
-            showStatus(`Overlay ${overlayVisible ? 'shown' : 'hidden'}`, 'info');
+        // If we're showing the overlay, also try to restore it from minimize
+        if (overlayVisible) {
+            // First try to restore from minimize
+            if (window.electronAPI.restoreOverlay) {
+                await window.electronAPI.restoreOverlay();
+            }
+            // Then show it
+            const result = await window.electronAPI.toggleOverlay(true);
+            if (result.success) {
+                toggleOverlayBtn.innerHTML = '👁️ Hide Overlay';
+                showStatus('Overlay shown', 'success');
+            } else {
+                throw new Error('Failed to show overlay');
+            }
         } else {
-            throw new Error('Failed to toggle overlay');
+            // Hide the overlay
+            const result = await window.electronAPI.toggleOverlay(false);
+            if (result.success) {
+                toggleOverlayBtn.innerHTML = '🚀 Show Overlay';
+                showStatus('Overlay hidden', 'success');
+            } else {
+                throw new Error('Failed to hide overlay');
+            }
         }
     } catch (error) {
         console.error('Error toggling overlay:', error);
         showStatus('Error toggling overlay', 'error');
+        // Revert the state on error
+        overlayVisible = !overlayVisible;
     }
 }
 

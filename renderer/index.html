@@ -10,8 +10,10 @@
     <div class="container">
         <!-- Header Section -->
         <div class="header">
+            <div class="header-icon"><img src="images/planets/Eyeframelogo.png" alt="Eyeframe"></div>
             <h1>Eyeframe Settings</h1>
-            <p class="subtitle">Select which timers to display on your overlay</p>
+            <p class="subtitle">Configure your Warframe overlay experience</p>
+            <div class="header-divider"></div>
         </div>
 
         <!-- Settings Form -->
@@ -27,6 +29,17 @@
                         <div class="timer-info">
                             <span class="timer-name">Daily Reset</span>
                             <span class="timer-description">Daily login rewards and missions reset</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="weeklyReset" name="weeklyReset" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Weekly Reset</span>
+                            <span class="timer-description">Weekly challenges and rewards reset</span>
                         </div>
                     </label>
                 </div>
@@ -65,21 +78,7 @@
                 </div>
             </div>
 
-            <!-- Overlay Settings Section -->
-            <div class="section">
-                <h2>Overlay Settings</h2>
-                
-                <div class="overlay-controls">
-                    <button type="button" id="toggleOverlay" class="control-btn">
-                        Hide Overlay
-                    </button>
-                    
-                    <button type="button" id="resetPosition" class="control-btn">
-                        Reset Position
-                    </button>
-                </div>
-            </div>
-
+           
             <!-- Action Buttons -->
             <div class="actions">
                 <button type="submit" id="applyBtn" class="btn btn-primary">
@@ -91,16 +90,30 @@
                 </button>
             </div>
         </form>
-
+ <!-- Overlay Settings Section -->
+            <div class="section">
+                <h2>Overlay Settings</h2>
+                
+                <div class="overlay-controls">
+                    <button type="button" id="toggleOverlay" class="control-btn primary-btn">
+                         Show Overlay
+                    </button>
+                    
+                    <button type="button" id="resetPosition" class="control-btn">
+                         Reset Position
+                    </button>
+                </div>
+            </div>
+        </form>
         <!-- Status Message -->
-        <div id="statusMessage" class="status-message hidden">
+        <div id="statusMessage" class=".status-message.show">
             Settings saved successfully!
         </div>
 
         <!-- Footer -->
         <div class="footer">
-            <p>Warframe Overlay v1.0.0</p>
-            <p class="note">The overlay window is draggable and stays on top</p>
+            <p>Eyeframe v1.0.0</p>
+            <p class="note">Dont mess with dragging the overlay.</p>
         </div>
     </div>
 
