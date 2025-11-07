@@ -44,6 +44,10 @@ async function loadSettings() {
         document.getElementById('cetusCycle').checked = settings.cetusCycle !== false;
         document.getElementById('fortunaCycle').checked = settings.fortunaCycle !== false;
         document.getElementById('arbitrationTimer').checked = settings.arbitrationTimer !== false;
+        document.getElementById('voidFissures').checked = settings.voidFissures !== false;
+        document.getElementById('circuit').checked = settings.circuit !== false;
+        document.getElementById('alerts').checked = settings.alerts !== false;
+        document.getElementById('invasions').checked = settings.invasions !== false;
         
     } catch (error) {
         console.error('Error loading settings:', error);
@@ -90,7 +94,11 @@ async function handleFormSubmit(event) {
             weeklyReset: document.getElementById('weeklyReset').checked,
             cetusCycle: document.getElementById('cetusCycle').checked,
             fortunaCycle: document.getElementById('fortunaCycle').checked,
-            arbitrationTimer: document.getElementById('arbitrationTimer').checked
+            arbitrationTimer: document.getElementById('arbitrationTimer').checked,
+            voidFissures: document.getElementById('voidFissures').checked,
+            circuit: document.getElementById('circuit').checked,
+            alerts: document.getElementById('alerts').checked,
+            invasions: document.getElementById('invasions').checked
         };
         
         console.log('Saving settings:', settings);

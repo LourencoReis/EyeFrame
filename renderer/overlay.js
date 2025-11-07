@@ -68,6 +68,31 @@ async function loadInitialSettings() {
             timerElements.arbitrationTimer.style.display = settings.arbitrationTimer ? 'flex' : 'none';
             console.log(`Arbitration timer: ${settings.arbitrationTimer ? 'shown' : 'hidden'}`);
         }
+
+        // Show/hide new sections based on settings
+        const fissuresSection = document.getElementById('fissuresSection');
+        if (fissuresSection) {
+            fissuresSection.style.display = settings.voidFissures !== false ? 'block' : 'none';
+            console.log(`Void Fissures: ${settings.voidFissures !== false ? 'shown' : 'hidden'}`);
+        }
+
+        const circuitSection = document.getElementById('circuitSection');
+        if (circuitSection) {
+            circuitSection.style.display = settings.circuit !== false ? 'block' : 'none';
+            console.log(`Duviri Circuit: ${settings.circuit !== false ? 'shown' : 'hidden'}`);
+        }
+
+        const alertsSection = document.getElementById('alertsSection');
+        if (alertsSection) {
+            alertsSection.style.display = settings.alerts !== false ? 'block' : 'none';
+            console.log(`Alerts & Events: ${settings.alerts !== false ? 'shown' : 'hidden'}`);
+        }
+
+        const invasionsSection = document.getElementById('invasionsSection');
+        if (invasionsSection) {
+            invasionsSection.style.display = settings.invasions !== false ? 'block' : 'none';
+            console.log(`Invasions: ${settings.invasions !== false ? 'shown' : 'hidden'}`);
+        }
     } catch (error) {
         console.error('Error loading initial settings:', error);
     }
@@ -741,6 +766,27 @@ window.electronAPI.onSettingsUpdated((settings) => {
     }
     if (timerElements.arbitrationTimer) {
         timerElements.arbitrationTimer.style.display = settings.arbitrationTimer ? 'flex' : 'none';
+    }
+
+    // Show/hide new sections based on settings
+    const fissuresSection = document.getElementById('fissuresSection');
+    if (fissuresSection) {
+        fissuresSection.style.display = settings.voidFissures !== false ? 'block' : 'none';
+    }
+
+    const circuitSection = document.getElementById('circuitSection');
+    if (circuitSection) {
+        circuitSection.style.display = settings.circuit !== false ? 'block' : 'none';
+    }
+
+    const alertsSection = document.getElementById('alertsSection');
+    if (alertsSection) {
+        alertsSection.style.display = settings.alerts !== false ? 'block' : 'none';
+    }
+
+    const invasionsSection = document.getElementById('invasionsSection');
+    if (invasionsSection) {
+        invasionsSection.style.display = settings.invasions !== false ? 'block' : 'none';
     }
 });
 
