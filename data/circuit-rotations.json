@@ -1,0 +1,193 @@
+{
+  "normalCircuit": {
+    "cycleWeeks": 11,
+    "rotations": [
+      {
+        "week": 1,
+        "warframes": [
+          { "name": "Excalibur", "image": "excalibur.png" },
+          { "name": "Trinity", "image": "trinity.png" },
+          { "name": "Ember", "image": "ember.png" }
+        ]
+      },
+      {
+        "week": 2,
+        "warframes": [
+          { "name": "Loki", "image": "loki.png" },
+          { "name": "Mag", "image": "mag.png" },
+          { "name": "Rhino", "image": "rhino.png" }
+        ]
+      },
+      {
+        "week": 3,
+        "warframes": [
+          { "name": "Ash", "image": "ash.png" },
+          { "name": "Frost", "image": "frost.png" },
+          { "name": "Nyx", "image": "nyx.png" }
+        ]
+      },
+      {
+        "week": 4,
+        "warframes": [
+          { "name": "Saryn", "image": "saryn.png" },
+          { "name": "Vauban", "image": "vauban.png" },
+          { "name": "Nova", "image": "nova.png" }
+        ]
+      },
+      {
+        "week": 5,
+        "warframes": [
+          { "name": "Nekros", "image": "nekros.png" },
+          { "name": "Valkyr", "image": "valkyr.png" },
+          { "name": "Oberon", "image": "oberon.png" }
+        ]
+      },
+      {
+        "week": 6,
+        "warframes": [
+          { "name": "Hydroid", "image": "hydroid.png" },
+          { "name": "Mirage", "image": "mirage.png" },
+          { "name": "Limbo", "image": "limbo.png" }
+        ]
+      },
+      {
+        "week": 7,
+        "warframes": [
+          { "name": "Mesa", "image": "mesa.png" },
+          { "name": "Chroma", "image": "chroma.png" },
+          { "name": "Atlas", "image": "atlas.png" }
+        ]
+      },
+      {
+        "week": 8,
+        "warframes": [
+          { "name": "Ivara", "image": "ivara.png" },
+          { "name": "Inaros", "image": "inaros.png" },
+          { "name": "Titania", "image": "titania.png" }
+        ]
+      },
+      {
+        "week": 9,
+        "warframes": [
+          { "name": "Nidus", "image": "nidus.png" },
+          { "name": "Octavia", "image": "octavia.png" },
+          { "name": "Harrow", "image": "harrow.png" }
+        ]
+      },
+      {
+        "week": 10,
+        "warframes": [
+          { "name": "Gara", "image": "gara.png" },
+          { "name": "Khora", "image": "khora.png" },
+          { "name": "Revenant", "image": "revenant.png" }
+        ]
+      },
+      {
+        "week": 11,
+        "warframes": [
+          { "name": "Garuda", "image": "garuda2.png" },
+          { "name": "Baruuk", "image": "baruuk.png" },
+          { "name": "Hildryn", "image": "hildryn.png" }
+        ]
+      }
+    ]
+  },
+  "steelPathCircuit": {
+    "cycleWeeks": 9,
+    "rotations": [
+      {
+        "week": 1,
+        "weapons": [
+          { "name": "Braton Incarnon", "image": "BratonIncarnon.png" },
+          { "name": "Lato Incarnon", "image": "LatoIncarnon.png" },
+          { "name": "Skana Incarnon", "image": "SkanaIncarnon.png" },
+          { "name": "Paris Incarnon", "image": "ParisIncarnon.png" },
+          { "name": "Kunai Incarnon", "image": "KunaiIncarnon.png" }
+        ]
+      },
+      {
+        "week": 2,
+        "weapons": [
+          { "name": "Boar Incarnon", "image": "BoarIncarnon.png" },
+          { "name": "Gammacor Incarnon", "image": "GammaCorIncarnon.png" },
+          { "name": "Angstrum Incarnon", "image": "AngstrumIncarnon.png" },
+          { "name": "Gorgon Incarnon", "image": "GorgonIncarnon.png" },
+          { "name": "Anku Incarnon", "image": "AnkuIncarnon.png" }
+        ]
+      },
+      {
+        "week": 3,
+        "weapons": [
+          { "name": "Bo Incarnon", "image": "BoIncarnon.png" },
+          { "name": "Latron Incarnon", "image": "LatronIncarnon.png" },
+          { "name": "Furis Incarnon", "image": "FurisIncarnon.png" },
+          { "name": "Furax Incarnon", "image": "FuraxIncarnon.png" },
+          { "name": "Strun Incarnon", "image": "StrunIncarnon.png" }
+        ]
+      },
+      {
+        "week": 4,
+        "weapons": [
+          { "name": "Lex Incarnon", "image": "LexIncarnon.png" },
+          { "name": "Magistar Incarnon", "image": "MagistarIncarnon.png" },
+          { "name": "Boltor Incarnon", "image": "BoltorIncarnon.png" },
+          { "name": "Bronco Incarnon", "image": "BroncoIncarnon.png" },
+          { "name": "Ceramic Dagger Incarnon", "image": "CeramicDaggerIncarnon.png" }
+        ]
+      },
+      {
+        "week": 5,
+        "weapons": [
+          { "name": "Torid Incarnon", "image": "ToridIncarnon.png" },
+          { "name": "Dual Toxocyst Incarnon", "image": "DualToxocystIncarnon.png" },
+          { "name": "Dual Ichor Incarnon", "image": "DualIchorIncarnon.png" },
+          { "name": "Miter Incarnon", "image": "MiterIncarnon.png" },
+          { "name": "Atomos Incarnon", "image": "AtomosIncarnon.png" }
+        ]
+      },
+      {
+        "week": 6,
+        "weapons": [
+          { "name": "Ack & Brunt Incarnon", "image": "AckBruntIncarnon.png" },
+          { "name": "Soma Incarnon", "image": "SomaIncarnon.png" },
+          { "name": "Vasto Incarnon", "image": "VastoIncarnon.png" },
+          { "name": "Nami Solo Incarnon", "image": "NamiSoloIncarnon.png" },
+          { "name": "Burston Incarnon", "image": "BurstonIncarnon.png" }
+        ]
+      },
+      {
+        "week": 7,
+        "weapons": [
+          { "name": "Zylok Incarnon", "image": "ZylokIncarnon.png" },
+          { "name": "Sibear Incarnon", "image": "SibearIncarnon.png" },
+          { "name": "Dread Incarnon", "image": "DreadIncarnon.png" },
+          { "name": "Despair Incarnon", "image": "DespairIncarnon.png" },
+          { "name": "Hate Incarnon", "image": "HateIncarnon.png" }
+        ]
+      },
+      {
+        "week": 8,
+        "weapons": [
+          { "name": "Dera Incarnon", "image": "DeraIncarnon.png" },
+          { "name": "Sybaris Incarnon", "image": "SybarisIncarnon.png" },
+          { "name": "Cestra Incarnon", "image": "CestraIncarnon.png" },
+          { "name": "Sicarus Incarnon", "image": "SicarusIncarnon.png" },
+          { "name": "Okina Incarnon", "image": "OkinaIncarnon.png" }
+        ]
+      },
+      {
+        "week": 9,
+        "weapons": [
+          { "name": "Braton Incarnon", "image": "BratonIncarnon.png" },
+          { "name": "Lato Incarnon", "image": "LatoIncarnon.png" },
+          { "name": "Skana Incarnon", "image": "SkanaIncarnon.png" },
+          { "name": "Paris Incarnon", "image": "ParisIncarnon.png" },
+          { "name": "Kunai Incarnon", "image": "KunaiIncarnon.png" }
+        ]
+      }
+    ]
+  },
+  "normalCircuitStartDate": "2025-11-10T00:00:00.000Z",
+  "steelPathStartDate": "2025-11-10T00:00:00.000Z",
+  "comment": "Normal Circuit: 11-week Warframe rotation starting Nov 10, 2025 (currently Week 1). Steel Path Circuit: 9-week Incarnon weapon rotation starting Nov 10, 2025 (currently Week 1). Both rotate every Monday at 00:00 UTC."
+}

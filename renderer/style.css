@@ -39,14 +39,14 @@ body.overlay-window {
     backdrop-filter: blur(10px);
     border: 2px solid rgba(0, 150, 255, 0.3);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 26, 51, 0.95) 50%, rgba(0, 51, 102, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 26, 51, 0.5) 50%, rgba(0, 51, 102, 0.5) 100%);
     display: flex;
     flex-direction: column;
 }
 
 /* Header */
 .overlay-header {
-    background: linear-gradient(90deg, rgba(0, 150, 255, 0.8) 0%, rgba(0, 100, 200, 0.8) 100%);
+    background: linear-gradient(90deg, rgba(0, 150, 255, 0.8) 0%, rgba(0, 100, 200, 0.8));
     padding: 6px 12px;
     display: flex;
     justify-content: space-between;
@@ -1179,10 +1179,38 @@ body.settings-window::before {
     margin-bottom: 10px;
 }
 
+.circuit-week-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.week-label {
+    font-weight: bold;
+    color: #2ecc71;
+    font-size: 14px;
+}
+
 .circuit-current {
     font-weight: bold;
     color: #ffffff;
     margin-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.current-label {
+    color: #a0a0a0;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.current-reward {
+    color: #2ecc71;
+    font-size: 16px;
 }
 
 .circuit-timer {
@@ -1194,15 +1222,19 @@ body.settings-window::before {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    margin-top: 8px;
 }
 
 .rotation-item {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
-    padding: 6px;
-    font-size: 12px;
+    padding: 8px;
+    font-size: 13px;
     color: #a0a0a0;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .rotation-item.current {
@@ -1210,6 +1242,107 @@ body.settings-window::before {
     color: #2ecc71;
     font-weight: bold;
     border-left: 3px solid #2ecc71;
+}
+
+.rotation-number {
+    color: #6c757d;
+    font-weight: bold;
+    min-width: 20px;
+}
+
+.rotation-name {
+    flex: 1;
+}
+
+/* Void Trader Enhanced Styling */
+.voidtrader-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.voidtrader-status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.voidtrader-status-badge.active {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+}
+
+.voidtrader-status-badge.inactive {
+    background: rgba(149, 165, 166, 0.2);
+    color: #95a5a6;
+    border: 1px solid #95a5a6;
+}
+
+.voidtrader-location {
+    color: #3498db;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.voidtrader-timer {
+    color: #f39c12;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.inventory-header {
+    color: #a0a0a0;
+    font-size: 12px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.inventory-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.item-name {
+    color: #ffffff;
+    font-size: 12px;
+    flex: 1;
+}
+
+.item-price {
+    color: #f39c12;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.inventory-more {
+    color: #6c757d;
+    font-style: italic;
+    font-size: 11px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.voidtrader-note {
+    color: #6c757d;
+    font-size: 11px;
+    font-style: italic;
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
 }
 
 /* Focus States for Accessibility */

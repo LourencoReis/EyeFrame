@@ -2,11 +2,61 @@
 let updateInterval;
 let minimized = false;
 let warframeAPI;
+let circuitRotations = null;
+let circuitRefreshTimeout = null;
 
 // Initialize Warframe API
 function initializeWarframeAPI() {
     warframeAPI = new WarframeAPI();
     console.log('Warframe API initialized');
+}
+
+// Load circuit rotation data
+async function loadCircuitRotations() {
+    try {
+        const response = await fetch('../data/circuit-rotations.json');
+        circuitRotations = await response.json();
+        console.log('Circuit rotations loaded successfully');
+        return circuitRotations;
+    } catch (error) {
+        console.error('Error loading circuit rotations:', error);
+        return null;
+    }
+}
+
+// Calculate current circuit week for normal (1-12) or steel path (1-9)
+function getCurrentCircuitWeek(circuitType = 'normal') {
+    if (!circuitRotations) return 1;
+    
+    const now = new Date();
+    
+    if (circuitType === 'steel') {
+        const startDate = new Date(circuitRotations.steelPathStartDate);
+        const weeksSinceStart = Math.floor((now - startDate) / (7 * 24 * 60 * 60 * 1000));
+        const currentWeek = (weeksSinceStart % circuitRotations.steelPathCircuit.cycleWeeks) + 1;
+        return currentWeek;
+    } else {
+        const startDate = new Date(circuitRotations.normalCircuitStartDate);
+        const weeksSinceStart = Math.floor((now - startDate) / (7 * 24 * 60 * 60 * 1000));
+        const currentWeek = (weeksSinceStart % circuitRotations.normalCircuit.cycleWeeks) + 1;
+        return currentWeek;
+    }
+}
+
+// Get next Monday 00:00 UTC
+function getNextCircuitReset() {
+    const now = new Date();
+    const currentDay = now.getUTCDay();
+    const daysUntilMonday = currentDay === 0 ? 1 : (8 - currentDay);
+    
+    const nextMonday = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + daysUntilMonday,
+        0, 0, 0, 0
+    ));
+    
+    return nextMonday;
 }
 
 // Current active tabs
@@ -20,6 +70,7 @@ async function initializeOverlay() {
     console.log('Starting overlay initialization...');
     
     initializeWarframeAPI();
+    await loadCircuitRotations();
     setupEventListeners();
     await loadInitialSettings();
     await updateAllTimers();
@@ -605,23 +656,35 @@ async function updateVoidTrader() {
             voidtraderSection.style.display = 'block';
             
             if (voidTrader.active) {
+                const timeRemaining = new Date(voidTrader.expiry) - Date.now();
                 voidtraderContent.innerHTML = `
                     <div class="voidtrader-active">
-                        <div class="voidtrader-location">${voidTrader.location}</div>
-                        <div class="voidtrader-timer">Leaves in ${formatTime(new Date(voidTrader.expiry) - Date.now())}</div>
+                        <div class="voidtrader-header">
+                            <span class="voidtrader-status-badge active">🔴 ACTIVE NOW</span>
+                            <div class="voidtrader-location">📍 ${voidTrader.location}</div>
+                        </div>
+                        <div class="voidtrader-timer">⏰ Leaves in ${formatTime(timeRemaining)}</div>
                         <div class="voidtrader-inventory">
-                            ${voidTrader.inventory.slice(0, 3).map(item => `
-                                <div class="inventory-item">${item.item} - ${item.ducats} ducats + ${item.credits} credits</div>
+                            <div class="inventory-header">Featured Items (${voidTrader.inventory.length} total):</div>
+                            ${voidTrader.inventory.slice(0, 5).map(item => `
+                                <div class="inventory-item">
+                                    <span class="item-name">${item.item}</span>
+                                    <span class="item-price">${item.ducats}🔶 + ${item.credits.toLocaleString()}cr</span>
+                                </div>
                             `).join('')}
-                            ${voidTrader.inventory.length > 3 ? `<div class="inventory-more">+${voidTrader.inventory.length - 3} more items</div>` : ''}
+                            ${voidTrader.inventory.length > 5 ? `<div class="inventory-more">+${voidTrader.inventory.length - 5} more items</div>` : ''}
                         </div>
                     </div>
                 `;
             } else {
+                const timeUntilArrival = new Date(voidTrader.activation) - Date.now();
                 voidtraderContent.innerHTML = `
                     <div class="voidtrader-inactive">
-                        <div class="voidtrader-status">Not active</div>
-                        <div class="voidtrader-timer">Arrives in ${formatTime(new Date(voidTrader.activation) - Date.now())}</div>
+                        <div class="voidtrader-header">
+                            <span class="voidtrader-status-badge inactive">⚫ Not Present</span>
+                        </div>
+                        <div class="voidtrader-timer">⏳ Arrives in ${formatTime(timeUntilArrival)}</div>
+                        <div class="voidtrader-note">Baro Ki'Teer appears every 2 weeks on Friday and stays until Sunday</div>
                     </div>
                 `;
             }
@@ -637,32 +700,73 @@ async function updateVoidTrader() {
 // Update circuit with real API data
 async function updateCircuit() {
     try {
-        const steelPath = await warframeAPI.getSteelPath();
-        
-        // Update steel path circuit if available
-        if (steelPath && steelPath.currentReward) {
-            const steelCircuitContainer = document.getElementById('steelCircuit');
-            if (steelCircuitContainer) {
-                const rotation = steelPath.rotation || [];
-                
-                steelCircuitContainer.innerHTML = `
-                    <div class="circuit-info">
-                        <div class="circuit-current">Current: ${steelPath.currentReward.name}</div>
-                        <div class="circuit-timer">${formatTime(new Date(steelPath.expiry) - Date.now())} remaining</div>
-                    </div>
-                    <div class="circuit-rotation">
-                        ${rotation.slice(0, 5).map((reward, index) => `
-                            <div class="rotation-item ${index === 0 ? 'current' : ''}">
-                                ${reward.name}
+        // Update Normal Circuit with rotation data (Warframes only - 12 weeks)
+        if (circuitRotations) {
+            const currentWeek = getCurrentCircuitWeek('normal');
+            const weekData = circuitRotations.normalCircuit.rotations.find(r => r.week === currentWeek);
+            const nextReset = getNextCircuitReset();
+            const timeUntilReset = nextReset - Date.now();
+            
+            if (weekData) {
+                const normalCircuitContainer = document.getElementById('normalCircuit');
+                if (normalCircuitContainer) {
+                    normalCircuitContainer.innerHTML = `
+                        <div class="circuit-info">
+                            <div class="circuit-week-info">
+                                <span class="week-label">Week ${currentWeek} of ${circuitRotations.normalCircuit.cycleWeeks}</span>
+                                <span class="circuit-timer">Resets in ${formatTime(timeUntilReset)}</span>
                             </div>
-                        `).join('')}
-                    </div>
-                `;
+                        </div>
+                        <div class="reward-category">
+                            <h4>Warframes</h4>
+                            <div class="reward-grid">
+                                ${weekData.warframes.map(wf => `
+                                    <div class="reward-item">
+                                        <img src="images/circuit/warframes/${wf.image}" alt="${wf.name}" onerror="this.style.display='none'">
+                                        <span>${wf.name}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
             }
+            
+            // Update Steel Path Circuit with rotation data (Weapons only - 9 weeks)
+            const steelWeek = getCurrentCircuitWeek('steel');
+            const steelWeekData = circuitRotations.steelPathCircuit.rotations.find(r => r.week === steelWeek);
+            
+            if (steelWeekData) {
+                const steelCircuitContainer = document.getElementById('steelCircuit');
+                if (steelCircuitContainer) {
+                    steelCircuitContainer.innerHTML = `
+                        <div class="circuit-info">
+                            <div class="circuit-week-info">
+                                <span class="week-label">Week ${steelWeek} of ${circuitRotations.steelPathCircuit.cycleWeeks}</span>
+                                <span class="circuit-timer">Resets in ${formatTime(timeUntilReset)}</span>
+                            </div>
+                        </div>
+                        <div class="reward-category">
+                            <h4>Incarnon Weapons</h4>
+                            <div class="reward-grid">
+                                ${steelWeekData.weapons.map(weapon => `
+                                    <div class="reward-item">
+                                        <img src="images/circuit/weapons/${weapon.image}" alt="${weapon.name}" onerror="this.style.display='none'">
+                                        <span>${weapon.name}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Schedule refresh at next weekly reset for both circuits
+            if (circuitRefreshTimeout) clearTimeout(circuitRefreshTimeout);
+            circuitRefreshTimeout = setTimeout(() => {
+                updateCircuit();
+            }, timeUntilReset + 2000); // +2s buffer
         }
-        
-        // For normal circuit, we'll keep static data since there's no dedicated API endpoint
-        // but we can enhance it with any available data
         
     } catch (error) {
         console.error('Error updating circuit:', error);
