@@ -74,7 +74,7 @@ async function initializeOverlay() {
     setupEventListeners();
     await loadInitialSettings();
     await updateAllTimers();
-    updateInterval = setInterval(() => updateAllTimers(), 30000); // Update every 30 seconds
+    updateInterval = setInterval(() => updateAllTimers(), 1000); // Update every second for live countdown
     initializeTabSwitching();
     
     console.log('Enhanced Eyeframe overlay initialized successfully');
@@ -93,7 +93,9 @@ async function loadInitialSettings() {
             weeklyResetTimer: document.getElementById('weeklyResetTimer'),
             cetusTimer: document.getElementById('cetusTimer'),
             fortunaTimer: document.getElementById('fortunaTimer'),
-            arbitrationTimer: document.getElementById('arbitrationTimer')
+            deimosTimer: document.getElementById('deimosTimer'),
+            arbitrationTimer: document.getElementById('arbitrationTimer'),
+            baroTimer: document.getElementById('baroTimer')
         };
         
         console.log('Timer elements found:', Object.keys(timerElements).map(key => ({ [key]: !!timerElements[key] })));
@@ -115,9 +117,17 @@ async function loadInitialSettings() {
             timerElements.fortunaTimer.style.display = settings.fortunaCycle ? 'flex' : 'none';
             console.log(`Fortuna timer: ${settings.fortunaCycle ? 'shown' : 'hidden'}`);
         }
+        if (timerElements.deimosTimer) {
+            timerElements.deimosTimer.style.display = settings.deimosCycle !== false ? 'flex' : 'none';
+            console.log(`Deimos timer: ${settings.deimosCycle !== false ? 'shown' : 'hidden'}`);
+        }
         if (timerElements.arbitrationTimer) {
             timerElements.arbitrationTimer.style.display = settings.arbitrationTimer ? 'flex' : 'none';
             console.log(`Arbitration timer: ${settings.arbitrationTimer ? 'shown' : 'hidden'}`);
+        }
+        if (timerElements.baroTimer) {
+            timerElements.baroTimer.style.display = settings.baroTimer !== false ? 'flex' : 'none';
+            console.log(`Baro Ki'Teer timer: ${settings.baroTimer !== false ? 'shown' : 'hidden'}`);
         }
 
         // Show/hide new sections based on settings
@@ -303,8 +313,11 @@ async function updateWorldTimers() {
             }
             
             if (statusElement) {
-                statusElement.textContent = worldState.cetusCycle.isDay ? 'Day' : 'Night';
+                const timeOfDay = worldState.cetusCycle.isDay ? '☀️ Day' : '🌙 Night';
+                const nextTime = worldState.cetusCycle.isDay ? 'Night' : 'Day';
+                statusElement.textContent = timeOfDay;
                 statusElement.className = `timer-status ${worldState.cetusCycle.isDay ? 'day' : 'night'}`;
+                statusElement.title = `Next: ${nextTime}`;
             }
         }
         
@@ -313,6 +326,7 @@ async function updateWorldTimers() {
         if (fortunaElement && worldState.vallisCycle) {
             const countdownElement = fortunaElement.querySelector('.timer-countdown');
             const statusElement = fortunaElement.querySelector('.timer-status');
+            const timerHeader = fortunaElement.querySelector('.timer-header');
             
             if (countdownElement) {
                 const timeRemaining = new Date(worldState.vallisCycle.expiry) - Date.now();
@@ -320,28 +334,104 @@ async function updateWorldTimers() {
             }
             
             if (statusElement) {
-                statusElement.textContent = worldState.vallisCycle.isWarm ? 'Warm' : 'Cold';
+                const temp = worldState.vallisCycle.isWarm ? '☀️ Warm' : '❄️ Cold';
+                const nextTemp = worldState.vallisCycle.isWarm ? 'Cold' : 'Warm';
+                statusElement.textContent = temp;
                 statusElement.className = `timer-status ${worldState.vallisCycle.isWarm ? 'warm' : 'cold'}`;
+                statusElement.title = `Next: ${nextTemp}`;
             }
         }
         
-        // Update Arbitration
-        const arbitrationData = await warframeAPI.getArbitration();
-        const arbitrationElement = document.getElementById('arbitrationTimer');
-        if (arbitrationElement && arbitrationData) {
-            const countdownElement = arbitrationElement.querySelector('.timer-countdown');
-            const statusElement = arbitrationElement.querySelector('.timer-status');
+        // Update Deimos Cambion Drift Vome/Fass cycle
+        const deimosElement = document.getElementById('deimosTimer');
+        if (deimosElement && worldState.cambionCycle) {
+            const countdownElement = deimosElement.querySelector('.timer-countdown');
+            const statusElement = deimosElement.querySelector('.timer-status');
             
             if (countdownElement) {
-                const timeRemaining = new Date(arbitrationData.expiry) - Date.now();
+                const timeRemaining = new Date(worldState.cambionCycle.expiry) - Date.now();
                 countdownElement.textContent = formatTime(timeRemaining) + ' remaining';
             }
             
             if (statusElement) {
-                statusElement.textContent = `${arbitrationData.node} (${arbitrationData.type})`;
-                statusElement.className = 'timer-status arbitration';
+                const isVome = worldState.cambionCycle.active === 'vome';
+                const current = isVome ? '🌙 Vome' : '☀️ Fass';
+                const next = isVome ? 'Fass' : 'Vome';
+                statusElement.textContent = current;
+                statusElement.className = `timer-status ${isVome ? 'vome' : 'fass'}`;
+                statusElement.title = `Next: ${next}`;
             }
         }
+        
+        // Update Arbitration with detailed info
+        const arbitrationData = await warframeAPI.getArbitration();
+        const arbitrationElement = document.getElementById('arbitrationTimer');
+        
+        if (arbitrationElement) {
+            if (arbitrationData && arbitrationData.node && arbitrationData.expiry) {
+                // Show arbitration with real data
+                console.log('Arbitration API data:', JSON.stringify(arbitrationData, null, 2));
+                const timerInfo = arbitrationElement.querySelector('.timer-info');
+                const timeRemaining = new Date(arbitrationData.expiry) - Date.now();
+                
+                if (timerInfo && timeRemaining > 0) {
+                    const modeInfo = [];
+                    if (arbitrationData.isArchwing) modeInfo.push('🚀 Archwing');
+                    if (arbitrationData.isSharkwing) modeInfo.push('🌊 Sharkwing');
+                    const modeText = modeInfo.length > 0 ? ` ${modeInfo.join(' ')}` : '';
+                    
+                    // Parse node name and extract planet
+                    let nodeName = 'Unknown';
+                    let planet = '';
+                    if (arbitrationData.node) {
+                        if (arbitrationData.node.includes('(')) {
+                            const parts = arbitrationData.node.split('(');
+                            nodeName = parts[0].trim();
+                            planet = parts[1] ? parts[1].replace(')', '').trim() : '';
+                        } else {
+                            nodeName = arbitrationData.node;
+                        }
+                    }
+                    
+                    // Get mission type and enemy
+                    const missionType = arbitrationData.type || 'Unknown Mission';
+                    const enemy = arbitrationData.enemy || 'Unknown Enemy';
+                    
+                    // Build simplified boost display
+                    let boostInfo = '';
+                    if (arbitrationData.warframe || arbitrationData.weapon) {
+                        boostInfo = '<div class="arb-boosts">';
+                        if (arbitrationData.warframe) {
+                            boostInfo += `<div class="arb-boost-item"><span class="arb-boost-icon">👤</span> ${arbitrationData.warframe}: Strength +300%, Health +500</div>`;
+                        }
+                        if (arbitrationData.weapon) {
+                            boostInfo += `<div class="arb-boost-item"><span class="arb-boost-icon">🗡️</span> ${arbitrationData.weapon}: Damage +300%</div>`;
+                        }
+                        boostInfo += '</div>';
+                    }
+                    
+                    timerInfo.innerHTML = `
+                        <div class="arb-mission-info">
+                            <div class="arb-mission-type">${missionType} (60-80) - ${planet}</div>
+                            <div class="arb-node">📍 ${nodeName}</div>
+                            <div class="arb-details">${enemy}${modeText}</div>
+                        </div>
+                        ${boostInfo}
+                        <div class="timer-countdown">⏱️ ${formatTime(timeRemaining)}</div>
+                    `;
+                    arbitrationElement.style.display = 'flex';
+                } else {
+                    arbitrationElement.style.display = 'none';
+                }
+            } else {
+                // No arbitration data, hide the element
+                console.log('No arbitration active, hiding timer');
+                arbitrationElement.style.display = 'none';
+            }
+        }
+        
+        // Update Baro Ki'Teer timer
+        updateBaroDisplay();
         
         // Update daily/weekly reset timers (keep original calculation)
         updateResetTimers();
@@ -642,6 +732,93 @@ async function updateNightwave() {
         
     } catch (error) {
         console.error('Error updating nightwave:', error);
+    }
+}
+
+// Baro Ki'Teer state
+let baroCache = { data: null, lastFetch: 0 };
+
+// Update Baro Ki'Teer display (called every second from world timers)
+function updateBaroDisplay() {
+    const now = Date.now();
+    
+    // Fetch new data only every 2 minutes
+    if (!baroCache.data || (now - baroCache.lastFetch > 120000)) {
+        fetchBaroData();
+    }
+    
+    // Update countdown using cached data
+    if (baroCache.data) {
+        const statusEl = document.getElementById('baroStatus');
+        const countdownEl = document.getElementById('baroCountdown');
+        const locationEl = document.getElementById('baroLocation');
+        const inventoryEl = document.getElementById('baroInventory');
+        
+        if (baroCache.data.active) {
+            const timeLeft = new Date(baroCache.data.expiry) - now;
+            if (statusEl) {
+                statusEl.textContent = '🟢 Here';
+                statusEl.className = 'timer-status baro-here';
+            }
+            if (countdownEl) countdownEl.textContent = `${formatTime(timeLeft)} remaining`;
+            if (locationEl && baroCache.data.location) {
+                locationEl.textContent = `📍 ${baroCache.data.location}`;
+                locationEl.style.display = 'block';
+            }
+            
+            // Display inventory
+            if (inventoryEl && baroCache.data.inventory && baroCache.data.inventory.length > 0) {
+                const notableItems = baroCache.data.inventory.filter(item => 
+                    item.type === 'Mod' || item.type === 'Weapon' || item.ducats >= 400
+                ).slice(0, 10); // Show top 10 notable items
+                
+                if (notableItems.length > 0) {
+                    let itemsHTML = '<div class="baro-items-header">Notable Items:</div>';
+                    itemsHTML += '<div class="baro-items-list">';
+                    notableItems.forEach(item => {
+                        const typeIcon = item.type === 'Mod' ? '📜' : item.type === 'Weapon' ? '⚔️' : '💎';
+                        itemsHTML += `
+                            <div class="baro-item">
+                                <span class="baro-item-icon">${typeIcon}</span>
+                                <span class="baro-item-name">${item.name}</span>
+                                <span class="baro-item-cost">
+                                    <img src="images/ducats.png" class="currency-icon" alt="Ducats" onerror="this.style.display='none'; this.nextSibling.textContent='${item.ducats}D '"> ${item.ducats}
+                                    <img src="images/credits.png" class="currency-icon" alt="Credits" onerror="this.style.display='none'; this.nextSibling.textContent='${(item.credits / 1000).toFixed(0)}k'"> ${(item.credits / 1000).toFixed(0)}k
+                                </span>
+                            </div>
+                        `;
+                    });
+                    itemsHTML += '</div>';
+                    itemsHTML += `<div class="baro-items-footer">${baroCache.data.inventory.length} total items</div>`;
+                    inventoryEl.innerHTML = itemsHTML;
+                    inventoryEl.style.display = 'block';
+                } else {
+                    inventoryEl.style.display = 'none';
+                }
+            }
+        } else {
+            const timeUntil = new Date(baroCache.data.activation) - now;
+            if (statusEl) {
+                statusEl.textContent = '⚫ Away';
+                statusEl.className = 'timer-status baro-away';
+            }
+            if (countdownEl) countdownEl.textContent = `Arrives in ${formatTime(timeUntil)}`;
+            if (locationEl) locationEl.style.display = 'none';
+            if (inventoryEl) inventoryEl.style.display = 'none';
+        }
+    }
+}
+
+// Fetch Baro data asynchronously (doesn't block rendering)
+async function fetchBaroData() {
+    try {
+        const data = await warframeAPI.getVoidTrader();
+        if (data) {
+            baroCache.data = data;
+            baroCache.lastFetch = Date.now();
+        }
+    } catch (error) {
+        console.error('Error fetching Baro data:', error);
     }
 }
 

@@ -62,15 +62,26 @@ body.overlay-window {
     flex: 1;
     padding: 15px;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 /* Section Cards */
-.timers-section, .fissures-section, .circuit-section {
+.timers-section {
     background: linear-gradient(135deg, rgba(0, 26, 51, 0.7) 0%, rgba(0, 51, 102, 0.5) 100%);
     border: 2px solid rgba(0, 150, 255, 0.2);
     border-radius: 12px;
     padding: 15px;
-    margin-bottom: 15px;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.fissures-section, .circuit-section {
+    background: linear-gradient(135deg, rgba(0, 26, 51, 0.7) 0%, rgba(0, 51, 102, 0.5) 100%);
+    border: 2px solid rgba(0, 150, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px;
     backdrop-filter: blur(5px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
@@ -1343,6 +1354,266 @@ body.settings-window::before {
     padding: 8px;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 4px;
+}
+
+.voidtrader-note {
+    color: #6c757d;
+    font-size: 11px;
+    font-style: italic;
+    margin-top: 10px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+}
+
+/* Enhanced World Cycle Status Styles */
+.timer-status {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.timer-status.day {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid #ffc107;
+}
+
+.timer-status.night {
+    background: rgba(103, 58, 183, 0.2);
+    color: #9c88ff;
+    border: 1px solid #9c88ff;
+}
+
+.timer-status.warm {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border: 1px solid #ff9800;
+}
+
+.timer-status.cold {
+    background: rgba(33, 150, 243, 0.2);
+    color: #42a5f5;
+    border: 1px solid #42a5f5;
+}
+
+.timer-status.vome {
+    background: rgba(156, 39, 176, 0.2);
+    color: #ce93d8;
+    border: 1px solid #ce93d8;
+}
+
+.timer-status.fass {
+    background: rgba(255, 87, 34, 0.2);
+    color: #ff6e40;
+    border: 1px solid #ff6e40;
+}
+
+.timer-status.arbitration {
+    background: rgba(244, 67, 54, 0.2);
+    color: #ff5252;
+    border: 1px solid #ff5252;
+}
+
+/* Baro Ki'Teer Location */
+.timer-location {
+    font-size: 11px;
+    color: #64b5f6;
+    margin: 4px 0;
+    font-weight: 600;
+}
+
+.timer-status.baro-here {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+}
+
+.timer-status.baro-away {
+    background: rgba(158, 158, 158, 0.2);
+    color: #9e9e9e;
+}
+
+/* Baro Inventory */
+.baro-inventory {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(139, 195, 255, 0.05);
+    border: 1px solid rgba(139, 195, 255, 0.2);
+    border-radius: 6px;
+}
+
+.baro-items-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffd54f;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.baro-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.baro-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    font-size: 10px;
+}
+
+.baro-item-icon {
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.baro-item-name {
+    flex: 1;
+    color: #ffffff;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.baro-item-cost {
+    color: #ffd54f;
+    font-weight: 600;
+    font-size: 9px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.currency-icon {
+    width: 12px;
+    height: 12px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+.baro-items-footer {
+    margin-top: 6px;
+    font-size: 9px;
+    color: #888888;
+    text-align: center;
+}
+
+/* Arbitration Simplified Clean Display */
+.arb-mission-info {
+    margin: 0 0 8px 0;
+    padding: 10px;
+    background: linear-gradient(135deg, rgba(10, 10, 20, 0.95) 0%, rgba(20, 20, 35, 0.9) 100%);
+    border: 1px solid rgba(139, 195, 255, 0.3);
+    border-radius: 8px;
+}
+
+.arb-mission-type {
+    font-size: 14px;
+    font-weight: 700;
+    color: #8bc3ff;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.arb-node {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64b5f6;
+    margin-bottom: 4px;
+}
+
+.arb-details {
+    font-size: 11px;
+    color: #aaaaaa;
+}
+
+.arb-boosts {
+    display: flex;
+    gap: 10px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.arb-boost-item {
+    background: rgba(255, 215, 79, 0.15);
+    border: 1px solid rgba(255, 215, 79, 0.3);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #ffd54f;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.4;
+}
+
+.arb-boost-icon {
+    font-size: 14px;
+}
+
+/* Old arbitration styles - keeping for backwards compatibility */
+.arbitration-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 6px 0;
+    font-size: 12px;
+}
+
+.arb-mission {
+    color: #64b5f6;
+    font-weight: 600;
+}
+
+.arb-type {
+    color: #81c784;
+    font-size: 11px;
+}
+
+.arb-enemy {
+    color: #ff8a65;
+    font-size: 11px;
+}
+
+.arb-boost {
+    color: #ffd54f;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 0;
+}
+
+/* Baro Ki'Teer Timer Styles */
+.baro-location {
+    color: #64b5f6;
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 600;
+}
+
+.timer-status.baro-here {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    border: 1px solid #4caf50;
+}
+
+.timer-status.baro-away {
+    background: rgba(158, 158, 158, 0.2);
+    color: #9e9e9e;
+    border: 1px solid #9e9e9e;
 }
 
 /* Focus States for Accessibility */

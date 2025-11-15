@@ -43,7 +43,9 @@ async function loadSettings() {
         document.getElementById('weeklyReset').checked = settings.weeklyReset !== false;
         document.getElementById('cetusCycle').checked = settings.cetusCycle !== false;
         document.getElementById('fortunaCycle').checked = settings.fortunaCycle !== false;
+        document.getElementById('deimosCycle').checked = settings.deimosCycle !== false;
         document.getElementById('arbitrationTimer').checked = settings.arbitrationTimer !== false;
+        document.getElementById('baroTimer').checked = settings.baroTimer !== false;
         document.getElementById('voidFissures').checked = settings.voidFissures !== false;
         document.getElementById('circuit').checked = settings.circuit !== false;
         document.getElementById('alerts').checked = settings.alerts !== false;
@@ -94,7 +96,9 @@ async function handleFormSubmit(event) {
             weeklyReset: document.getElementById('weeklyReset').checked,
             cetusCycle: document.getElementById('cetusCycle').checked,
             fortunaCycle: document.getElementById('fortunaCycle').checked,
+            deimosCycle: document.getElementById('deimosCycle').checked,
             arbitrationTimer: document.getElementById('arbitrationTimer').checked,
+            baroTimer: document.getElementById('baroTimer').checked,
             voidFissures: document.getElementById('voidFissures').checked,
             circuit: document.getElementById('circuit').checked,
             alerts: document.getElementById('alerts').checked,

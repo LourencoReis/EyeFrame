@@ -65,6 +65,17 @@
                 </div>
             </div>
 
+            <div class="timer-item" id="deimosTimer">
+                <img src="images/planets/deimos.png" class="timer-icon" alt="Deimos" onerror="this.style.display='none'">
+                <div class="timer-info">
+                    <div class="timer-header">
+                        <span class="timer-name">Deimos</span>
+                        <span class="timer-status vome">Vome</span>
+                    </div>
+                    <div class="timer-countdown">30m remaining</div>
+                </div>
+            </div>
+
             <div class="timer-item" id="arbitrationTimer">
                 <img src="images/planets/arbitration.png" class="timer-icon" alt="Arbitration" onerror="this.style.display='none'">
                 <div class="timer-info">
@@ -73,6 +84,19 @@
                         <span class="timer-status arbitration">Active</span>
                     </div>
                     <div class="timer-countdown">2h 15m remaining</div>
+                </div>
+            </div>
+
+            <div class="timer-item" id="baroTimer">
+                <img src="images/planets/relay.png" class="timer-icon" alt="Baro Ki'Teer">
+                <div class="timer-info">
+                    <div class="timer-header">
+                        <span class="timer-name">Baro Ki'Teer</span>
+                        <span class="timer-status" id="baroStatus">⚫ Away</span>
+                    </div>
+                    <div class="timer-location" id="baroLocation" style="display: none;"></div>
+                    <div class="timer-countdown" id="baroCountdown">Loading...</div>
+                    <div class="baro-inventory" id="baroInventory" style="display: none;"></div>
                 </div>
             </div>
         </div>

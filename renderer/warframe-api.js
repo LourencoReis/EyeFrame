@@ -345,9 +345,30 @@ class WarframeAPI {
                 await this.fetchData();
             }
             
-            if (!this.data || !this.data.arbitration) return null;
+            // Check both arbitrations (plural) and arbitration (singular) for compatibility
+            const arbitrationData = this.data.arbitrations || this.data.arbitration;
+            console.log('Raw arbitration data from API:', JSON.stringify(arbitrationData, null, 2));
+            if (!arbitrationData) {
+                console.log('No arbitration data found in API response');
+                return null;
+            }
+            
+            // Handle the {time, data: []} structure from api.tenno.tools
+            let arbitration;
+            if (arbitrationData.data && Array.isArray(arbitrationData.data)) {
+                arbitration = arbitrationData.data[0]; // Get first item from data array
+            } else if (Array.isArray(arbitrationData)) {
+                arbitration = arbitrationData[0]; // Direct array
+            } else {
+                arbitration = arbitrationData; // Direct object
+            }
+            
+            console.log('Parsed arbitration:', JSON.stringify(arbitration, null, 2));
+            if (!arbitration) {
+                console.log('No active arbitration found');
+                return null;
+            }
 
-            const arbitration = this.data.arbitration;
             return {
                 id: 'arbitrationTimer',
                 name: 'Arbitration',
@@ -357,6 +378,8 @@ class WarframeAPI {
                 expiry: arbitration.expiry,
                 isArchwing: arbitration.archwing,
                 isSharkwing: arbitration.sharkwing,
+                warframe: arbitration.warframe || null,
+                weapon: arbitration.weapon || null,
                 icon: 'images/planets/arbitration.png'
             };
         } catch (error) {
@@ -679,16 +702,39 @@ class WarframeAPI {
                 await this.fetchData();
             }
             
-            if (!this.data || !this.data.voidTrader) return null;
+            // Check both voidtraders (plural) and voidTrader (singular)
+            const voidTraderData = this.data.voidtraders || this.data.voidTrader;
+            console.log('Raw voidTrader data from API:', JSON.stringify(voidTraderData, null, 2));
+            
+            if (!voidTraderData) {
+                console.log('No voidTrader data found');
+                return null;
+            }
 
-            const voidTrader = this.data.voidTrader;
+            // Handle if it's wrapped in {time, data} structure
+            let voidTrader;
+            if (voidTraderData.data && Array.isArray(voidTraderData.data)) {
+                voidTrader = voidTraderData.data[0];
+            } else if (Array.isArray(voidTraderData)) {
+                voidTrader = voidTraderData[0];
+            } else {
+                voidTrader = voidTraderData;
+            }
+            
+            console.log('Parsed voidTrader:', JSON.stringify(voidTrader, null, 2));
+            
+            if (!voidTrader) {
+                console.log('No active voidTrader found');
+                return null;
+            }
+
             return {
                 id: voidTrader.id,
-                activation: voidTrader.activation,
-                expiry: voidTrader.expiry,
-                character: voidTrader.character,
+                activation: voidTrader.start ? new Date(voidTrader.start * 1000).toISOString() : voidTrader.activation,
+                expiry: voidTrader.end ? new Date(voidTrader.end * 1000).toISOString() : voidTrader.expiry,
+                character: voidTrader.name || voidTrader.character || "Baro Ki'Teer",
                 location: voidTrader.location,
-                inventory: voidTrader.inventory,
+                inventory: voidTrader.items || voidTrader.inventory,
                 psId: voidTrader.psId,
                 active: voidTrader.active,
                 startString: voidTrader.startString,
