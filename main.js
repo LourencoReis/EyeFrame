@@ -96,6 +96,17 @@ function createOverlayWindow() {
         overlayWindow.webContents.openDevTools();
     }
 
+    // Add keyboard shortcut to toggle DevTools (Ctrl+Shift+I or F12)
+    overlayWindow.webContents.on('before-input-event', (event, input) => {
+        if ((input.control && input.shift && input.key.toLowerCase() === 'i') || input.key === 'F12') {
+            if (overlayWindow.webContents.isDevToolsOpened()) {
+                overlayWindow.webContents.closeDevTools();
+            } else {
+                overlayWindow.webContents.openDevTools();
+            }
+        }
+    });
+
     // Handle window closed
     overlayWindow.on('closed', () => {
         overlayWindow = null;

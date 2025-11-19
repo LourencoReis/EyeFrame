@@ -18,14 +18,16 @@ class WarframeAPI {
         try {
             console.log('Fetching Warframe API data...');
             
-            // Try the main API first
-            let response = await fetch(this.baseURL);
+            // Try warframestat.us first (supports more endpoints)
+            const mainUrl = 'https://api.warframestat.us/pc';
+            console.log('Trying main URL:', mainUrl);
+            
+            let response = await fetch(mainUrl);
             
             if (!response.ok) {
-                // Try alternative endpoints
+                // Try alternative endpoints as fallback
                 console.log('Primary endpoint failed, trying alternatives...');
                 const alternatives = [
-                    'https://api.warframestat.us/pc',
                     'https://api.tenno.tools/worldstate/pc',
                     'https://ws.warframestat.us/pc'
                 ];
@@ -42,6 +44,8 @@ class WarframeAPI {
                         console.log('Failed:', url, e.message);
                     }
                 }
+            } else {
+                console.log('Success with main URL:', mainUrl);
             }
             
             if (!response.ok) {
@@ -643,18 +647,44 @@ class WarframeAPI {
                 await this.fetchData();
             }
             
-            if (!this.data || !this.data.sortie) return null;
+            console.log('getSortie - All API properties:', Object.keys(this.data || {}));
+            console.log('getSortie - checking data.sortie:', !!this.data?.sortie);
+            console.log('getSortie - checking data.sorties:', !!this.data?.sorties);
+            
+            // The API uses "sorties" (plural)
+            const sortieData = this.data?.sorties || this.data?.sortie;
+            
+            if (!sortieData) {
+                console.log('No sortie/sorties data found in API response');
+                return null;
+            }
 
-            const sortie = this.data.sortie;
+            // Handle array format (API returns {time, data: [...]})
+            let sortie;
+            if (sortieData.data && Array.isArray(sortieData.data)) {
+                sortie = sortieData.data[0];
+            } else if (Array.isArray(sortieData)) {
+                sortie = sortieData[0];
+            } else {
+                sortie = sortieData;
+            }
+            
+            console.log('Sortie raw data:', JSON.stringify(sortie, null, 2));
+            
+            // API uses "missions" not "variants"
+            // API returns Unix timestamps in seconds, convert to milliseconds
+            const activation = sortie.start || sortie.activation;
+            const expiry = sortie.end || sortie.expiry;
+            
             return {
                 id: sortie.id,
-                activation: sortie.activation,
-                expiry: sortie.expiry,
-                rewardPool: sortie.rewardPool,
-                variants: sortie.variants,
-                boss: sortie.boss,
+                activation: activation * 1000, // Convert to milliseconds
+                expiry: expiry * 1000, // Convert to milliseconds
+                rewardPool: sortie.rewardPool || sortie.rewards,
+                variants: sortie.missions || sortie.variants || [],
+                boss: sortie.bossName || sortie.boss,
                 faction: sortie.faction,
-                expired: sortie.expired,
+                expired: sortie.expired || false,
                 eta: sortie.eta
             };
         } catch (error) {
@@ -773,49 +803,309 @@ class WarframeAPI {
     }
 
     /**
-     * Get Archon Hunt data
+     * Get Archon Hunt data - fetches from dedicated endpoint
      */
     async getArchonHunt() {
         try {
+            console.log('Fetching archon hunt from dedicated endpoint...');
+            
+            // Try the dedicated archon hunt endpoint first
+            try {
+                const response = await fetch('https://api.warframestat.us/pc/archonHunt');
+                console.log('Archon hunt endpoint response status:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const archonData = await response.json();
+                    console.log('Archon hunt fetched from dedicated endpoint:', JSON.stringify(archonData, null, 2));
+                    
+                    if (archonData && archonData.id) {
+                        return {
+                            id: archonData.id,
+                            activation: archonData.activation,
+                            expiry: archonData.expiry,
+                            boss: archonData.boss,
+                            faction: archonData.faction || archonData.factionKey || 'Narmer',
+                            missions: archonData.missions || [],
+                            rewardPool: archonData.rewardPool,
+                            isArchon: true
+                        };
+                    } else {
+                        console.log('Archon hunt data exists but missing id:', archonData);
+                    }
+                } else {
+                    console.log('Archon hunt endpoint returned non-OK status');
+                }
+            } catch (fetchError) {
+                console.error('Dedicated archon hunt endpoint error:', fetchError);
+            }
+            
+            // Fallback to main data if dedicated endpoint fails
             if (!this.data) {
                 await this.fetchData();
             }
             
             if (!this.data) return null;
 
-            // Check different possible property names for archon hunt
-            const archonData = this.data.archonHunt || 
+            // Check all possible property names in main data
+            let archonData = this.data.archonHunt || 
                              this.data.archon || 
-                             this.data.hunts ||
-                             this.data.weeklyArchon ||
-                             this.data.sortie; // Sorties sometimes contain archon hunts
+                             this.data.archonhunt;
 
-            console.log('Archon hunt debug:', JSON.stringify({
-                archonHunt: !!this.data.archonHunt,
-                archon: !!this.data.archon,
-                hunts: !!this.data.hunts,
-                weeklyArchon: !!this.data.weeklyArchon,
-                sortie: !!this.data.sortie
-            }, null, 2));
+            console.log('getArchonHunt - Checking main data, archonData found:', !!archonData);
 
             if (!archonData) {
-                console.log('No archon hunt data found');
+                console.log('No archon hunt data found in any source');
                 return null;
             }
 
+            // Handle array format
+            const archon = Array.isArray(archonData) ? archonData[0] : archonData;
+            
+            console.log('Archon hunt data structure:', {
+                id: archon.id,
+                boss: archon.boss,
+                missionsCount: archon.missions?.length
+            });
+
             return {
-                id: archonData.id || 'archon-hunt',
-                activation: archonData.activation,
-                expiry: archonData.expiry,
-                boss: archonData.boss,
-                faction: archonData.faction || 'Archon',
-                missions: archonData.missions || [],
-                rewards: archonData.rewards || [{ itemString: 'Archon Shard' }],
+                id: archon.id || 'archon-hunt',
+                activation: archon.activation,
+                expiry: archon.expiry,
+                boss: archon.boss,
+                faction: archon.faction || archon.factionKey || 'Narmer',
+                missions: archon.missions || archon.variants || [],
+                rewardPool: archon.rewardPool,
                 isArchon: true
             };
         } catch (error) {
             console.error('Error getting archon hunt:', error);
             return null;
+        }
+    }
+
+    /**
+     * Get arbitration data
+     */
+    async getArbitration() {
+        try {
+            if (!this.data) await this.fetchData();
+            
+            console.log('getArbitration - All API properties:', Object.keys(this.data || {}));
+            // Check both singular and plural, and handle {time, data:[]} structure
+            let arbitrationData = this.data?.arbitration || this.data?.arbitrations;
+            
+            // If it's wrapped in {time, data:[]}, extract the data
+            if (arbitrationData && arbitrationData.time && arbitrationData.data) {
+                console.log('Arbitration is wrapped, extracting data array');
+                arbitrationData = arbitrationData.data;
+            }
+            
+            // Log the raw data for debugging
+            if (Array.isArray(arbitrationData)) {
+                console.log('Arbitration data array length:', arbitrationData.length);
+                if (arbitrationData.length > 0) {
+                    console.log('First arbitration item:', JSON.stringify(arbitrationData[0], null, 2));
+                } else {
+                    console.log('Arbitration data array is empty - might be between rotations');
+                }
+            }
+            
+            // Get first element if it's an array
+            const arbitration = Array.isArray(arbitrationData) ? arbitrationData[0] : arbitrationData;
+            
+            console.log('Arbitration data after extraction:', arbitration);
+            
+            if (!arbitration || (Array.isArray(arbitrationData) && arbitrationData.length === 0)) {
+                console.log('No arbitration data found - data array is empty or no arbitration active');
+                console.log('Arbitrations property value:', this.data?.arbitrations);
+                return null;
+            }
+            
+            console.log('Arbitration raw data:', JSON.stringify(arbitration, null, 2));
+            
+            return {
+                id: arbitration.id,
+                activation: arbitration.activation,
+                expiry: arbitration.expiry,
+                node: arbitration.mission?.node || 'Unknown',
+                type: arbitration.mission?.type || 'Unknown',
+                faction: arbitration.mission?.faction || 'Unknown',
+                enemyLevel: `${arbitration.mission?.minEnemyLevel || 0}-${arbitration.mission?.maxEnemyLevel || 0}`,
+                archwing: arbitration.mission?.archwingRequired || false,
+                rewards: arbitration.rewardTypes || []
+            };
+        } catch (error) {
+            console.error('Error getting arbitration:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Get events data
+     */
+    async getEvents() {
+        try {
+            if (!this.data) await this.fetchData();
+            
+            console.log('getEvents - All API properties:', Object.keys(this.data || {}));
+            let eventsData = this.data?.events;
+            
+            // If it's wrapped in {time, data:[]}, extract the data
+            if (eventsData && eventsData.time && eventsData.data) {
+                console.log('Events is wrapped, extracting data array');
+                eventsData = eventsData.data;
+            }
+            
+            const events = Array.isArray(eventsData) ? eventsData : [];
+            
+            if (!events || events.length === 0) {
+                console.log('No events data found');
+                return [];
+            }
+            
+            console.log('Events raw data:', JSON.stringify(events, null, 2));
+            
+            return events.map(event => ({
+                id: event.id,
+                activation: event.activation,
+                expiry: event.expiry,
+                description: event.description,
+                tooltip: event.tooltip,
+                node: event.node,
+                faction: event.faction,
+                rewards: event.rewards || [],
+                health: event.health,
+                maximumScore: event.maximumScore,
+                currentScore: event.currentScore,
+                affiliatedWith: event.affiliatedWith,
+                jobs: event.jobs || [],
+                interimSteps: event.interimSteps || [],
+                asString: event.asString
+            }));
+        } catch (error) {
+            console.error('Error getting events:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get global upgrades/bonuses
+     */
+    async getGlobalUpgrades() {
+        try {
+            if (!this.data) await this.fetchData();
+            
+            console.log('getGlobalUpgrades - All API properties:', Object.keys(this.data || {}));
+            // Check both 'upgrades' and 'globalUpgrades'
+            let upgradesData = this.data?.upgrades || this.data?.globalUpgrades;
+            
+            // If it's wrapped in {time, data:[]}, extract the data
+            if (upgradesData && upgradesData.time && upgradesData.data) {
+                console.log('Upgrades is wrapped, extracting data array');
+                upgradesData = upgradesData.data;
+            }
+            
+            const upgrades = Array.isArray(upgradesData) ? upgradesData : [];
+            
+            if (!upgrades || upgrades.length === 0) {
+                console.log('No global upgrades data found');
+                return [];
+            }
+            
+            console.log('Global upgrades raw data:', JSON.stringify(upgrades, null, 2));
+            
+            return upgrades.map(upgrade => ({
+                start: upgrade.start,
+                end: upgrade.end,
+                upgrade: upgrade.upgrade,
+                operation: upgrade.operation,
+                operationSymbol: upgrade.operationSymbol,
+                upgradeOperationValue: upgrade.upgradeOperationValue,
+                eta: upgrade.eta,
+                desc: upgrade.desc
+            }));
+        } catch (error) {
+            console.error('Error getting global upgrades:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get invasions data
+     */
+    async getInvasions() {
+        try {
+            if (!this.data) await this.fetchData();
+            
+            console.log('getInvasions - All API properties:', Object.keys(this.data || {}));
+            let invasionsData = this.data?.invasions;
+            
+            // If it's wrapped in {time, data:[]}, extract the data
+            if (invasionsData && invasionsData.time && invasionsData.data) {
+                console.log('Invasions is wrapped, extracting data array');
+                invasionsData = invasionsData.data;
+            }
+            
+            const invasions = Array.isArray(invasionsData) ? invasionsData : [];
+            
+            if (!invasions || invasions.length === 0) {
+                console.log('No invasions data found');
+                return [];
+            }
+            
+            console.log('Invasions raw data:', JSON.stringify(invasions, null, 2));
+            
+            return invasions.map(invasion => {
+                // Calculate completion percentage from score
+                const score = invasion.score || 0;
+                const endScore = invasion.endScore || 30000;
+                const completion = ((endScore + score) / (endScore * 2)) * 100;
+                
+                // Format rewards
+                const formatReward = (rewardObj) => {
+                    if (!rewardObj || !rewardObj.items || rewardObj.items.length === 0) {
+                        return { asString: 'Unknown', itemString: 'Unknown' };
+                    }
+                    const items = rewardObj.items.map(item => 
+                        `${item.count > 1 ? item.count + 'x ' : ''}${item.name}`
+                    ).join(', ');
+                    return { asString: items, itemString: items };
+                };
+                
+                // Calculate ETA from score history
+                let eta = 'Unknown';
+                if (invasion.scoreHistory && invasion.scoreHistory.length > 1) {
+                    const recent = invasion.scoreHistory.slice(-5);
+                    const timeSpan = Math.abs(recent[recent.length - 1][0] - recent[0][0]);
+                    const scoreChange = Math.abs(recent[recent.length - 1][1] - recent[0][1]);
+                    if (scoreChange > 0) {
+                        const secondsPerPoint = timeSpan / scoreChange;
+                        const remaining = endScore - Math.abs(score);
+                        const etaSeconds = remaining * secondsPerPoint;
+                        const hours = Math.floor(etaSeconds / 3600);
+                        const minutes = Math.floor((etaSeconds % 3600) / 60);
+                        eta = `${hours}h ${minutes}m`;
+                    }
+                }
+                
+                return {
+                    id: invasion.id,
+                    activation: invasion.start ? invasion.start * 1000 : null,
+                    expiry: invasion.end ? invasion.end * 1000 : null,
+                    node: invasion.location || 'Unknown',
+                    attackingFaction: invasion.factionAttacker || 'Unknown',
+                    defendingFaction: invasion.factionDefender || 'Unknown',
+                    attackerReward: formatReward(invasion.rewardsAttacker),
+                    defenderReward: formatReward(invasion.rewardsDefender),
+                    completion: Math.round(completion),
+                    completed: invasion.completed || false,
+                    eta: eta,
+                    vsInfestation: invasion.factionAttacker === 'Infestation' || invasion.factionDefender === 'Infestation'
+                };
+            });
+        } catch (error) {
+            console.error('Error getting invasions:', error);
+            return [];
         }
     }
 

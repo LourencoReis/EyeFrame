@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Warframe API Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #fff; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
+        pre { background: #2a2a2a; padding: 15px; border-radius: 5px; overflow: auto; max-height: 500px; }
+        .section { margin: 20px 0; border: 1px solid #444; padding: 15px; border-radius: 5px; }
+        h2 { color: #0af; }
+    </style>
+</head>
+<body>
+    <h1>Warframe API Data Test</h1>
+    <button onclick="testAPI()">Fetch API Data</button>
+    <button onclick="testSortie()">Test Sortie</button>
+    <button onclick="testArchon()">Test Archon Hunt</button>
+    
+    <div class="section">
+        <h2>All API Properties</h2>
+        <pre id="properties">Click "Fetch API Data" to load...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>Sortie Data</h2>
+        <pre id="sortie">Click "Test Sortie" to load...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>Archon Hunt Data</h2>
+        <pre id="archon">Click "Test Archon Hunt" to load...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>Raw API Response (First 50 properties)</h2>
+        <pre id="raw">Waiting for data...</pre>
+    </div>
+
+    <script>
+        let apiData = null;
+        
+        async function testAPI() {
+            try {
+                const response = await fetch('https://api.tenno.tools/worldstate/pc');
+                apiData = await response.json();
+                
+                // Show all property names
+                const properties = Object.keys(apiData);
+                document.getElementById('properties').textContent = 
+                    'Total properties: ' + properties.length + '\n\n' +
+                    properties.join('\n');
+                
+                // Show relevant properties with values
+                const relevant = {};
+                for (const key of properties.slice(0, 50)) {
+                    if (apiData[key] && typeof apiData[key] === 'object') {
+                        relevant[key] = Array.isArray(apiData[key]) 
+                            ? `[Array of ${apiData[key].length} items]`
+                            : '[Object]';
+                    } else {
+                        relevant[key] = apiData[key];
+                    }
+                }
+                document.getElementById('raw').textContent = JSON.stringify(relevant, null, 2);
+                
+                alert('API data loaded! Check the sections below.');
+            } catch (error) {
+                document.getElementById('properties').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testSortie() {
+            if (!apiData) {
+                await testAPI();
+            }
+            
+            const sortieData = apiData.sorties || apiData.sortie;
+            const sortie = Array.isArray(sortieData) ? sortieData[0] : sortieData;
+            
+            document.getElementById('sortie').textContent = 
+                'Found property: ' + (apiData.sorties ? 'sorties' : apiData.sortie ? 'sortie' : 'NONE') + '\n' +
+                'Is array: ' + Array.isArray(sortieData) + '\n\n' +
+                JSON.stringify(sortie, null, 2);
+        }
+        
+        async function testArchon() {
+            if (!apiData) {
+                await testAPI();
+            }
+            
+            const possibleProps = [
+                'archonHunt', 'archonhunt', 'archon', 'hunts', 
+                'weeklyArchon', 'weeklies', 'challenges'
+            ];
+            
+            let foundProp = null;
+            let archonData = null;
+            
+            for (const prop of possibleProps) {
+                if (apiData[prop]) {
+                    foundProp = prop;
+                    archonData = apiData[prop];
+                    break;
+                }
+            }
+            
+            if (!archonData && apiData.weeklies) {
+                for (const prop of Object.keys(apiData.weeklies)) {
+                    if (prop.toLowerCase().includes('archon')) {
+                        foundProp = 'weeklies.' + prop;
+                        archonData = apiData.weeklies[prop];
+                        break;
+                    }
+                }
+            }
+            
+            document.getElementById('archon').textContent = 
+                'Found property: ' + (foundProp || 'NONE') + '\n' +
+                'Checked properties: ' + possibleProps.join(', ') + '\n\n' +
+                (archonData ? JSON.stringify(archonData, null, 2) : 'No archon hunt data found in API');
+        }
+    </script>
+</body>
+</html>

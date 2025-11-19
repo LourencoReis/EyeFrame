@@ -8,15 +8,6 @@
     <script src="warframe-api.js"></script>
 </head>
 <body class="overlay-window">
-    <!-- Draggable Header -->
-    <div class="overlay-header" id="overlayHeader">
-        <span class="overlay-title">Eyeframe</span>
-        <div class="overlay-controls">
-            <button class="control-btn" id="minimizeBtn" title="Minimize">−</button>
-            <button class="control-btn close-btn" id="closeBtn" title="Close">✕</button>
-        </div>
-    </div>
-
     <!-- Timer Content -->
     <div class="overlay-content" id="overlayContent">
         <!-- Main Timers Section -->
@@ -83,7 +74,8 @@
                         <span class="timer-name">Arbitration</span>
                         <span class="timer-status arbitration">Active</span>
                     </div>
-                    <div class="timer-countdown">2h 15m remaining</div>
+                    <div class="arbitration-mission" id="arbitrationMission">Loading...</div>
+                    <div class="timer-countdown">Loading...</div>
                 </div>
             </div>
 
@@ -97,6 +89,44 @@
                     <div class="timer-location" id="baroLocation" style="display: none;"></div>
                     <div class="timer-countdown" id="baroCountdown">Loading...</div>
                     <div class="baro-inventory" id="baroInventory" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sortie Section -->
+        <div class="sortie-section" id="sortieTimer">
+            <h3 class="section-title">SORTIE</h3>
+            <div class="sortie-countdown" id="sortieCountdown">Loading...</div>
+            <div class="sortie-missions" id="sortieMissions">
+                <div class="sortie-mission-item">
+                    <img src="images/missions/assault.png" class="sortie-mission-img" alt="Mission" onerror="this.style.display='none'">
+                    <div class="sortie-mission-details">
+                        <div class="sortie-mission-type">ASSAULT (50-60)</div>
+                        <div class="sortie-mission-location">Loading...</div>
+                        <div class="sortie-mission-condition">Conditions: Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Archon Hunt Section -->
+        <div class="archon-section" id="archonTimer">
+            <h3 class="section-title">ARCHON HUNT</h3>
+            <div class="archon-countdown" id="archonCountdown">Loading...</div>
+            <div class="archon-boss-banner" id="archonBanner">
+                <div class="archon-boss-name">Loading...</div>
+                <div class="archon-rewards">
+                    <div class="archon-rewards-title">REWARDS</div>
+                    <div class="archon-reward-text">Crimson Archon Shard<br>Plus 1 Reward Pool item:</div>
+                </div>
+            </div>
+            <div class="archon-missions" id="archonMissions">
+                <div class="archon-mission-item">
+                    <img src="images/missions/sabotage.png" class="archon-mission-img" alt="Mission" onerror="this.style.display='none'">
+                    <div class="archon-mission-details">
+                        <div class="archon-mission-type">Archon Hunt: Sabotage (130-135)</div>
+                        <div class="archon-mission-location">Loading...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -254,18 +284,26 @@
         </div>
 
         <!-- Events Section -->
-        <div class="events-section" id="eventsSection" style="display: none;">
-            <h3 class="section-title">🎯 Events</h3>
+        <div class="events-section" id="eventsSection">
+            <h3 class="section-title">Events</h3>
             <div class="events-list" id="eventsList">
-                <!-- Dynamic content -->
+                <div class="placeholder-message">No active events</div>
             </div>
         </div>
 
         <!-- Invasions Section -->
-        <div class="invasions-section" id="invasionsSection" style="display: none;">
-            <h3 class="section-title">⚔️ Invasions</h3>
+        <div class="invasions-section" id="invasionsSection">
+            <h3 class="section-title">Invasions</h3>
             <div class="invasions-list" id="invasionsList">
-                <!-- Dynamic content -->
+                <div class="placeholder-message">No active invasions</div>
+            </div>
+        </div>
+        
+        <!-- Global Upgrades Section -->
+        <div class="upgrades-section" id="upgradesSection">
+            <h3 class="section-title">Global Upgrades</h3>
+            <div class="upgrades-list" id="upgradesList">
+                <div class="placeholder-message">No active bonuses</div>
             </div>
         </div>
 

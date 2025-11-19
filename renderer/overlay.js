@@ -4,6 +4,8 @@ let minimized = false;
 let warframeAPI;
 let circuitRotations = null;
 let circuitRefreshTimeout = null;
+let directorTheme = false;
+let activeDirectorTab = null;
 
 // Initialize Warframe API
 function initializeWarframeAPI() {
@@ -86,6 +88,15 @@ async function loadInitialSettings() {
         console.log('Loading initial settings...');
         const settings = await window.electronAPI.getSettings();
         console.log('Initial settings loaded:', settings);
+        
+        // Apply theme setting
+        if (settings.directorTheme !== undefined) {
+            directorTheme = settings.directorTheme;
+            if (directorTheme) {
+                // Give DOM time to load before converting
+                setTimeout(() => applyTheme(), 100);
+            }
+        }
         
         // Apply settings to timer visibility
         const timerElements = {
@@ -254,11 +265,14 @@ function switchFissureTab(tabName) {
     document.querySelectorAll('.fissure-tabs .tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
+    if (selectedTab) selectedTab.classList.add('active');
 
     // Show/hide content
-    document.getElementById('normalFissures').style.display = tabType === 'normal' ? 'block' : 'none';
-    document.getElementById('steelFissures').style.display = tabType === 'steel' ? 'block' : 'none';
+    const normalFissures = document.getElementById('normalFissures');
+    const steelFissures = document.getElementById('steelFissures');
+    if (normalFissures) normalFissures.style.display = tabType === 'normal' ? 'block' : 'none';
+    if (steelFissures) steelFissures.style.display = tabType === 'steel' ? 'block' : 'none';
 
     updateFissureTimers();
 }
@@ -283,11 +297,16 @@ function switchCircuitTab(tabName) {
 async function updateAllTimers() {
     console.log('updateAllTimers called at:', new Date().toLocaleTimeString());
     try {
+        // Force a fresh API fetch to see current data
+        await warframeAPI.fetchData();
+        
         await updateWorldTimers();
         await updateFissureTimers();
-        await updateAlertsAndEvents();
+        await updateEvents();
         await updateInvasions();
+        await updateGlobalUpgrades();
         await updateSortie();
+        await updateArchonHunt();
         await updateNightwave();
         await updateVoidTrader();
         await updateCircuit();
@@ -308,7 +327,7 @@ async function updateWorldTimers() {
             const statusElement = cetusElement.querySelector('.timer-status');
             
             if (countdownElement) {
-                const timeRemaining = new Date(worldState.cetusCycle.expiry) - Date.now();
+                const timeRemaining = new Date(worldState.cetusCycle.expiry * 1000) - Date.now();
                 countdownElement.textContent = formatTime(timeRemaining) + ' remaining';
             }
             
@@ -329,7 +348,7 @@ async function updateWorldTimers() {
             const timerHeader = fortunaElement.querySelector('.timer-header');
             
             if (countdownElement) {
-                const timeRemaining = new Date(worldState.vallisCycle.expiry) - Date.now();
+                const timeRemaining = new Date(worldState.vallisCycle.expiry * 1000) - Date.now();
                 countdownElement.textContent = formatTime(timeRemaining) + ' remaining';
             }
             
@@ -349,7 +368,7 @@ async function updateWorldTimers() {
             const statusElement = deimosElement.querySelector('.timer-status');
             
             if (countdownElement) {
-                const timeRemaining = new Date(worldState.cambionCycle.expiry) - Date.now();
+                const timeRemaining = new Date(worldState.cambionCycle.expiry * 1000) - Date.now();
                 countdownElement.textContent = formatTime(timeRemaining) + ' remaining';
             }
             
@@ -402,7 +421,7 @@ async function updateWorldTimers() {
                     if (arbitrationData.warframe || arbitrationData.weapon) {
                         boostInfo = '<div class="arb-boosts">';
                         if (arbitrationData.warframe) {
-                            boostInfo += `<div class="arb-boost-item"><span class="arb-boost-icon">👤</span> ${arbitrationData.warframe}: Strength +300%, Health +500</div>`;
+                            boostInfo += `<div class="arb-boost-item"><span class="arb-boost-icon">�</span> ${arbitrationData.warframe}: Strength +300%, Health +500</div>`;
                         }
                         if (arbitrationData.weapon) {
                             boostInfo += `<div class="arb-boost-item"><span class="arb-boost-icon">🗡️</span> ${arbitrationData.weapon}: Damage +300%</div>`;
@@ -421,12 +440,37 @@ async function updateWorldTimers() {
                     `;
                     arbitrationElement.style.display = 'flex';
                 } else {
-                    arbitrationElement.style.display = 'none';
+                    // Show "no arbitration" message in director theme, hide in normal mode
+                    if (directorTheme) {
+                        const timerInfo = arbitrationElement.querySelector('.timer-info');
+                        if (timerInfo) {
+                            timerInfo.innerHTML = `
+                                <div class="timer-name">Arbitration</div>
+                                <div class="timer-countdown" style="color: #888;">No active arbitration</div>
+                                <div class="timer-details" style="color: #666;">Check back later for new arbitration missions</div>
+                            `;
+                        }
+                        arbitrationElement.style.display = 'flex';
+                    } else {
+                        arbitrationElement.style.display = 'none';
+                    }
                 }
             } else {
-                // No arbitration data, hide the element
+                // No arbitration data
                 console.log('No arbitration active, hiding timer');
-                arbitrationElement.style.display = 'none';
+                if (directorTheme) {
+                    const timerInfo = arbitrationElement.querySelector('.timer-info');
+                    if (timerInfo) {
+                        timerInfo.innerHTML = `
+                            <div class="timer-name">Arbitration</div>
+                            <div class="timer-countdown" style="color: #888;">No active arbitration</div>
+                            <div class="timer-details" style="color: #666;">Check back later for new arbitration missions</div>
+                        `;
+                    }
+                    arbitrationElement.style.display = 'flex';
+                } else {
+                    arbitrationElement.style.display = 'none';
+                }
             }
         }
         
@@ -597,17 +641,19 @@ async function updateAlertsAndEvents() {
         const alertsSection = document.getElementById('alertsSection');
         const alertsList = document.getElementById('alertsList');
         
-        if (alerts && alerts.length > 0) {
-            alertsSection.style.display = 'block';
-            alertsList.innerHTML = alerts.map(alert => `
-                <div class="alert-item">
-                    <div class="alert-mission">${alert.mission?.node || alert.node || 'Unknown'} - ${alert.mission?.type || alert.missionType || 'Alert'}</div>
-                    <div class="alert-reward">${alert.mission?.reward?.itemString || alert.reward?.itemString || 'Credits'}</div>
-                    <div class="alert-timer">${formatTime(new Date(alert.expiry) - Date.now())}</div>
-                </div>
-            `).join('');
-        } else {
-            alertsSection.style.display = 'none';
+        if (alertsSection && alertsList) {
+            if (alerts && alerts.length > 0) {
+                alertsSection.style.display = 'block';
+                alertsList.innerHTML = alerts.map(alert => `
+                    <div class="alert-item">
+                        <div class="alert-mission">${alert.mission?.node || alert.node || 'Unknown'} - ${alert.mission?.type || alert.missionType || 'Alert'}</div>
+                        <div class="alert-reward">${alert.mission?.reward?.itemString || alert.reward?.itemString || 'Credits'}</div>
+                        <div class="alert-timer">${formatTime(new Date(alert.expiry) - Date.now())}</div>
+                    </div>
+                `).join('');
+            } else {
+                alertsSection.style.display = 'none';
+            }
         }
         
         // Update events
@@ -615,21 +661,26 @@ async function updateAlertsAndEvents() {
         const eventsSection = document.getElementById('eventsSection');
         const eventsList = document.getElementById('eventsList');
         
-        if (events && events.length > 0) {
-            eventsSection.style.display = 'block';
-            eventsList.innerHTML = events.map(event => `
-                <div class="event-item">
-                    <div class="event-name">${event.description}</div>
-                    <div class="event-progress">${event.health ? `${((1 - event.health) * 100).toFixed(1)}% Complete` : ''}</div>
-                    <div class="event-timer">${formatTime(new Date(event.expiry) - Date.now())}</div>
-                </div>
-            `).join('');
-        } else {
-            eventsSection.style.display = 'none';
+        if (eventsSection && eventsList) {
+            if (events && events.length > 0) {
+                eventsSection.style.display = 'block';
+                eventsList.innerHTML = events.map(event => `
+                    <div class="event-item">
+                        <div class="event-name">${event.description}</div>
+                        <div class="event-progress">${event.health ? `${((1 - event.health) * 100).toFixed(1)}% Complete` : ''}</div>
+                        <div class="event-timer">${formatTime(new Date(event.expiry) - Date.now())}</div>
+                    </div>
+                `).join('');
+            } else {
+                eventsSection.style.display = 'none';
+            }
         }
         
     } catch (error) {
         console.error('Error updating alerts and events:', error);
+        // Gracefully handle missing elements
+        const eventsSection = document.getElementById('eventsSection');
+        if (eventsSection) eventsSection.style.display = 'none';
     }
 }
 
@@ -640,33 +691,38 @@ async function updateInvasions() {
         const invasionsSection = document.getElementById('invasionsSection');
         const invasionsList = document.getElementById('invasionsList');
         
-        if (invasions && invasions.length > 0) {
-            invasionsSection.style.display = 'block';
-            invasionsList.innerHTML = invasions.map(invasion => `
-                <div class="invasion-item">
-                    <div class="invasion-node">${invasion.node}</div>
-                    <div class="invasion-factions">
-                        <span class="attacker">${invasion.attackingFaction}</span>
-                        vs
-                        <span class="defender">${invasion.defendingFaction}</span>
-                    </div>
-                    <div class="invasion-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${(invasion.completion + 50)}%"></div>
+        if (invasionsSection && invasionsList) {
+            if (invasions && invasions.length > 0) {
+                invasionsSection.style.display = 'block';
+                invasionsList.innerHTML = invasions.map(invasion => `
+                    <div class="invasion-item">
+                        <div class="invasion-node">${invasion.node}</div>
+                        <div class="invasion-factions">
+                            <span class="attacker">${invasion.attackingFaction}</span>
+                            vs
+                            <span class="defender">${invasion.defendingFaction}</span>
                         </div>
-                        <span>${invasion.completion.toFixed(1)}%</span>
+                        <div class="invasion-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(invasion.completion + 50)}%"></div>
+                            </div>
+                            <span>${invasion.completion.toFixed(1)}%</span>
+                        </div>
+                        <div class="invasion-rewards">
+                            ${invasion.attackerReward?.itemString || ''} vs ${invasion.defenderReward?.itemString || ''}
+                        </div>
                     </div>
-                    <div class="invasion-rewards">
-                        ${invasion.attackerReward?.itemString || ''} vs ${invasion.defenderReward?.itemString || ''}
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            invasionsSection.style.display = 'none';
+                `).join('');
+            } else {
+                invasionsSection.style.display = 'none';
+            }
         }
         
     } catch (error) {
         console.error('Error updating invasions:', error);
+        // Gracefully handle missing elements
+        const invasionsSection = document.getElementById('invasionsSection');
+        if (invasionsSection) invasionsSection.style.display = 'none';
     }
 }
 
@@ -674,34 +730,174 @@ async function updateInvasions() {
 async function updateSortie() {
     try {
         const sortie = await warframeAPI.getSortie();
-        const sortieSection = document.getElementById('sortieSection');
-        const sortieContent = document.getElementById('sortieContent');
+        console.log('Sortie data received:', sortie);
         
-        if (sortie) {
-            sortieSection.style.display = 'block';
-            sortieContent.innerHTML = `
-                <div class="sortie-info">
-                    <div class="sortie-boss">${sortie.boss}</div>
-                    <div class="sortie-faction">${sortie.faction}</div>
-                    <div class="sortie-timer">${formatTime(new Date(sortie.expiry) - Date.now())} remaining</div>
-                </div>
-                <div class="sortie-missions">
-                    ${sortie.variants.map((mission, index) => `
-                        <div class="sortie-mission">
-                            <span class="mission-number">${index + 1}.</span>
-                            <span class="mission-type">${mission.missionType}</span>
-                            <span class="mission-node">${mission.node}</span>
-                            <span class="mission-modifier">${mission.modifier}</span>
+        const sortieSection = document.getElementById('sortieTimer');
+        const sortieCountdown = document.getElementById('sortieCountdown');
+        const sortieMissions = document.getElementById('sortieMissions');
+        
+        if (sortieSection && sortieCountdown && sortieMissions) {
+            if (sortie && sortie.variants && sortie.variants.length > 0 && !sortie.expired) {
+                sortieSection.style.display = 'block';
+                
+                // Update countdown
+                const timeLeft = new Date(sortie.expiry) - Date.now();
+                sortieCountdown.textContent = `⏱${formatTime(timeLeft)}`;
+                
+                // Update missions
+                sortieMissions.innerHTML = sortie.variants.map((mission, index) => {
+                    const levelRange = mission.enemyLevel || mission.minEnemyLevel && mission.maxEnemyLevel 
+                        ? `(${mission.minEnemyLevel || 50}-${mission.maxEnemyLevel || 100})`
+                        : '(50-100)';
+                    
+                    return `
+                        <div class="sortie-mission-item">
+                            <img src="images/missions/${(mission.missionType || 'assault').toLowerCase()}.png" 
+                                 class="sortie-mission-img" 
+                                 alt="${mission.missionType}" 
+                                 onerror="this.src='images/planets/warframe.png'">
+                            <div class="sortie-mission-details">
+                                <div class="sortie-mission-type">${mission.missionType || 'Mission'} ${levelRange}</div>
+                                <div class="sortie-mission-location">${mission.node || 'Unknown Location'}</div>
+                                <div class="sortie-mission-condition">Conditions: ${mission.modifier || mission.modifierDescription || 'Standard'}</div>
+                                ${mission.modifierDescription ? `<div class="sortie-mission-description">${mission.modifierDescription}</div>` : ''}
+                            </div>
                         </div>
-                    `).join('')}
-                </div>
-            `;
-        } else {
-            sortieSection.style.display = 'none';
+                    `;
+                }).join('');
+            } else {
+                console.log('No sortie data or expired');
+                // Show placeholder instead of hiding
+                sortieMissions.innerHTML = `
+                    <div class="sortie-mission-item">
+                        <img src="images/missions/sortie.png" class="sortie-mission-img" alt="Mission" onerror="this.src='images/planets/warframe.png'">
+                        <div class="sortie-mission-details">
+                            <div class="sortie-mission-type">No Active Sortie</div>
+                            <div class="sortie-mission-location">Check back later for daily missions</div>
+                        </div>
+                    </div>
+                `;
+            }
         }
         
     } catch (error) {
         console.error('Error updating sortie:', error);
+        // Show error message instead of hiding
+        const sortieMissions = document.getElementById('sortieMissions');
+        if (sortieMissions) {
+            sortieMissions.innerHTML = `
+                <div class="sortie-mission-item">
+                    <img src="images/missions/sortie.png" class="sortie-mission-img" alt="Mission" onerror="this.src='images/planets/warframe.png'">
+                    <div class="sortie-mission-details">
+                        <div class="sortie-mission-type">Unable to load Sortie</div>
+                        <div class="sortie-mission-location">Error: ${error.message}</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+// Update archon hunt
+async function updateArchonHunt() {
+    try {
+        const archon = await warframeAPI.getArchonHunt();
+        console.log('Archon hunt data received:', archon);
+        
+        const archonSection = document.getElementById('archonTimer');
+        const archonCountdown = document.getElementById('archonCountdown');
+        const archonBanner = document.getElementById('archonBanner');
+        const archonMissions = document.getElementById('archonMissions');
+        
+        if (archonSection && archonCountdown && archonBanner && archonMissions) {
+            if (archon && archon.expiry) {
+                archonSection.style.display = 'block';
+                
+                // Update countdown (connected to weekly reset)
+                const timeLeft = new Date(archon.expiry) - Date.now();
+                archonCountdown.textContent = `⏱${formatTime(timeLeft)}`;
+                
+                // Update banner with boss name
+                const bossName = archon.boss || 'ARCHON HUNT';
+                archonBanner.innerHTML = `
+                    <div class="archon-boss-name">${bossName.toUpperCase()}</div>
+                    <div class="archon-rewards">
+                        <div class="archon-rewards-title">REWARDS</div>
+                        <div class="archon-reward-text">
+                            Crimson Archon Shard<br>
+                            Plus 1 Reward Pool item:<br>
+                            ${archon.rewards && archon.rewards.length > 0 
+                                ? archon.rewards.map(r => r.itemString || r).join(', ')
+                                : '20% chance • Various Resources'}
+                        </div>
+                    </div>
+                `;
+                
+                // Update missions
+                if (archon.missions && archon.missions.length > 0) {
+                    archonMissions.innerHTML = archon.missions.map((mission, index) => {
+                        const levelRange = `(${mission.minEnemyLevel || 130}-${mission.maxEnemyLevel || 150})`;
+                        return `
+                            <div class="archon-mission-item">
+                                <img src="images/missions/${(mission.type || mission.missionType || 'mission').toLowerCase()}.png" 
+                                     class="archon-mission-img" 
+                                     alt="${mission.type || mission.missionType}" 
+                                     onerror="this.src='images/planets/warframe.png'">
+                                <div class="archon-mission-details">
+                                    <div class="archon-mission-type">Archon Hunt: ${mission.type || mission.missionType || 'Mission'} ${levelRange}</div>
+                                    <div class="archon-mission-location">${mission.node || mission.nodeKey || 'Unknown Location'}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    archonMissions.innerHTML = `
+                        <div class="archon-mission-item">
+                            <img src="images/missions/mission.png" class="archon-mission-img" alt="Mission" onerror="this.src='images/planets/warframe.png'">
+                            <div class="archon-mission-details">
+                                <div class="archon-mission-type">Archon Hunt: Sabotage (130-135)</div>
+                                <div class="archon-mission-location">Awaiting mission data...</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                console.log('No archon hunt data or missing expiry');
+                // Show placeholder instead of hiding
+                archonBanner.innerHTML = `
+                    <div class="archon-boss-name">ARCHON HUNT DATA UNAVAILABLE</div>
+                    <div class="archon-rewards">
+                        <div class="archon-rewards-title">STATUS</div>
+                        <div class="archon-reward-text">Archon Hunts are always active. API may not support this endpoint.</div>
+                    </div>
+                `;
+                archonMissions.innerHTML = `
+                    <div class="archon-mission-item">
+                        <img src="images/logos/archon.png" class="archon-mission-img" alt="Mission" onerror="this.src='images/planets/warframe.png'">
+                        <div class="archon-mission-details">
+                            <div class="archon-mission-type">No missions available</div>
+                            <div class="archon-mission-location">Resets weekly</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error updating archon hunt:', error);
+        // Show error message instead of hiding
+        const archonMissions = document.getElementById('archonMissions');
+        if (archonMissions) {
+            archonMissions.innerHTML = `
+                <div class="archon-mission-item">
+                    <img src="images/logos/archon.png" class="archon-mission-img" alt="Mission" onerror="this.src='images/planets/warframe.png'">
+                    <div class="archon-mission-details">
+                        <div class="archon-mission-type">Unable to load Archon Hunt</div>
+                        <div class="archon-mission-location">Error: ${error.message}</div>
+                    </div>
+                </div>
+            `;
+        }
     }
 }
 
@@ -712,26 +908,31 @@ async function updateNightwave() {
         const nightwaveSection = document.getElementById('nightwaveSection');
         const nightwaveContent = document.getElementById('nightwaveContent');
         
-        if (nightwave) {
-            nightwaveSection.style.display = 'block';
-            nightwaveContent.innerHTML = `
-                <div class="nightwave-info">
-                    <div class="nightwave-season">${nightwave.tag}</div>
-                    <div class="nightwave-timer">${formatTime(new Date(nightwave.expiry) - Date.now())} remaining</div>
-                </div>
-                <div class="nightwave-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${(nightwave.phase / nightwave.params.length) * 100}%"></div>
+        if (nightwaveSection && nightwaveContent) {
+            if (nightwave) {
+                nightwaveSection.style.display = 'block';
+                nightwaveContent.innerHTML = `
+                    <div class="nightwave-info">
+                        <div class="nightwave-season">${nightwave.tag}</div>
+                        <div class="nightwave-timer">${formatTime(new Date(nightwave.expiry) - Date.now())} remaining</div>
                     </div>
-                    <span>Phase ${nightwave.phase}/${nightwave.params.length}</span>
-                </div>
-            `;
-        } else {
-            nightwaveSection.style.display = 'none';
+                    <div class="nightwave-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(nightwave.phase / nightwave.params.length) * 100}%"></div>
+                        </div>
+                        <span>Phase ${nightwave.phase}/${nightwave.params.length}</span>
+                    </div>
+                `;
+            } else {
+                nightwaveSection.style.display = 'none';
+            }
         }
         
     } catch (error) {
         console.error('Error updating nightwave:', error);
+        // Gracefully handle missing elements
+        const nightwaveSection = document.getElementById('nightwaveSection');
+        if (nightwaveSection) nightwaveSection.style.display = 'none';
     }
 }
 
@@ -829,48 +1030,53 @@ async function updateVoidTrader() {
         const voidtraderSection = document.getElementById('voidtraderSection');
         const voidtraderContent = document.getElementById('voidtraderContent');
         
-        if (voidTrader) {
-            voidtraderSection.style.display = 'block';
-            
-            if (voidTrader.active) {
-                const timeRemaining = new Date(voidTrader.expiry) - Date.now();
-                voidtraderContent.innerHTML = `
-                    <div class="voidtrader-active">
-                        <div class="voidtrader-header">
-                            <span class="voidtrader-status-badge active">🔴 ACTIVE NOW</span>
-                            <div class="voidtrader-location">📍 ${voidTrader.location}</div>
+        if (voidtraderSection && voidtraderContent) {
+            if (voidTrader) {
+                voidtraderSection.style.display = 'block';
+                
+                if (voidTrader.active) {
+                    const timeRemaining = new Date(voidTrader.expiry) - Date.now();
+                    voidtraderContent.innerHTML = `
+                        <div class="voidtrader-active">
+                            <div class="voidtrader-header">
+                                <span class="voidtrader-status-badge active">🔴 ACTIVE NOW</span>
+                                <div class="voidtrader-location">📍 ${voidTrader.location}</div>
+                            </div>
+                            <div class="voidtrader-timer">⏰ Leaves in ${formatTime(timeRemaining)}</div>
+                            <div class="voidtrader-inventory">
+                                <div class="inventory-header">Featured Items (${voidTrader.inventory.length} total):</div>
+                                ${voidTrader.inventory.slice(0, 5).map(item => `
+                                    <div class="inventory-item">
+                                        <span class="item-name">${item.item}</span>
+                                        <span class="item-price">${item.ducats}🔶 + ${item.credits.toLocaleString()}cr</span>
+                                    </div>
+                                `).join('')}
+                                ${voidTrader.inventory.length > 5 ? `<div class="inventory-more">+${voidTrader.inventory.length - 5} more items</div>` : ''}
+                            </div>
                         </div>
-                        <div class="voidtrader-timer">⏰ Leaves in ${formatTime(timeRemaining)}</div>
-                        <div class="voidtrader-inventory">
-                            <div class="inventory-header">Featured Items (${voidTrader.inventory.length} total):</div>
-                            ${voidTrader.inventory.slice(0, 5).map(item => `
-                                <div class="inventory-item">
-                                    <span class="item-name">${item.item}</span>
-                                    <span class="item-price">${item.ducats}🔶 + ${item.credits.toLocaleString()}cr</span>
-                                </div>
-                            `).join('')}
-                            ${voidTrader.inventory.length > 5 ? `<div class="inventory-more">+${voidTrader.inventory.length - 5} more items</div>` : ''}
+                    `;
+                } else {
+                    const timeUntilArrival = new Date(voidTrader.activation) - Date.now();
+                    voidtraderContent.innerHTML = `
+                        <div class="voidtrader-inactive">
+                            <div class="voidtrader-header">
+                                <span class="voidtrader-status-badge inactive">⚫ Not Present</span>
+                            </div>
+                            <div class="voidtrader-timer">⏳ Arrives in ${formatTime(timeUntilArrival)}</div>
+                            <div class="voidtrader-note">Baro Ki'Teer appears every 2 weeks on Friday and stays until Sunday</div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             } else {
-                const timeUntilArrival = new Date(voidTrader.activation) - Date.now();
-                voidtraderContent.innerHTML = `
-                    <div class="voidtrader-inactive">
-                        <div class="voidtrader-header">
-                            <span class="voidtrader-status-badge inactive">⚫ Not Present</span>
-                        </div>
-                        <div class="voidtrader-timer">⏳ Arrives in ${formatTime(timeUntilArrival)}</div>
-                        <div class="voidtrader-note">Baro Ki'Teer appears every 2 weeks on Friday and stays until Sunday</div>
-                    </div>
-                `;
+                voidtraderSection.style.display = 'none';
             }
-        } else {
-            voidtraderSection.style.display = 'none';
         }
         
     } catch (error) {
         console.error('Error updating void trader:', error);
+        // Gracefully handle missing elements
+        const voidtraderSection = document.getElementById('voidtraderSection');
+        if (voidtraderSection) voidtraderSection.style.display = 'none';
     }
 }
 
@@ -950,6 +1156,151 @@ async function updateCircuit() {
     }
 }
 
+// Update events
+async function updateEvents() {
+    try {
+        const events = await warframeAPI.getEvents();
+        const eventsSection = document.getElementById('eventsSection');
+        const eventsList = document.getElementById('eventsList');
+        
+        if (eventsSection && eventsList) {
+            if (events && events.length > 0) {
+                eventsSection.style.display = 'block';
+                eventsList.innerHTML = events.map(event => {
+                    const timeRemaining = new Date(event.expiry) - Date.now();
+                    const healthPercent = event.health ? Math.min(100, Math.max(0, event.health)) : 0;
+                    const scorePercent = event.maximumScore > 0 ? (event.currentScore / event.maximumScore) * 100 : 0;
+                    
+                    return `
+                        <div class="event-item">
+                            <div class="event-header">
+                                <span class="event-description">${event.description || event.tooltip}</span>
+                                <span class="event-faction">${event.faction}</span>
+                            </div>
+                            ${event.node ? `<div class="event-node">📍 ${event.node}</div>` : ''}
+                            <div class="event-timer">⏰ ${formatTime(timeRemaining)} remaining</div>
+                            ${event.health !== undefined ? `
+                                <div class="event-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${healthPercent}%"></div>
+                                    </div>
+                                    <span>Health: ${healthPercent.toFixed(1)}%</span>
+                                </div>
+                            ` : ''}
+                            ${event.maximumScore > 0 ? `
+                                <div class="event-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${scorePercent}%"></div>
+                                    </div>
+                                    <span>Score: ${event.currentScore.toLocaleString()} / ${event.maximumScore.toLocaleString()}</span>
+                                </div>
+                            ` : ''}
+                            ${event.rewards && event.rewards.length > 0 ? `
+                                <div class="event-rewards">
+                                    <strong>Rewards:</strong> ${event.rewards.map(r => r.asString || r.itemString).filter(Boolean).join(', ')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                eventsList.innerHTML = '<div class="placeholder-message">No active events</div>';
+            }
+        }
+    } catch (error) {
+        console.error('Error updating events:', error);
+    }
+}
+
+// Update invasions
+async function updateInvasions() {
+    try {
+        const invasions = await warframeAPI.getInvasions();
+        const invasionsSection = document.getElementById('invasionsSection');
+        const invasionsList = document.getElementById('invasionsList');
+        
+        if (invasionsSection && invasionsList) {
+            if (invasions && invasions.length > 0) {
+                invasionsSection.style.display = 'block';
+                invasionsList.innerHTML = invasions.filter(inv => !inv.completed).map(invasion => {
+                    const completion = invasion.completion || 0;
+                    const eta = invasion.eta || 'Unknown';
+                    
+                    return `
+                        <div class="invasion-item">
+                            <div class="invasion-header">
+                                <span class="invasion-node">${invasion.node}</span>
+                                <span class="invasion-eta">⏰ ${eta}</span>
+                            </div>
+                            <div class="invasion-factions">
+                                <div class="invasion-faction attacker">
+                                    <strong>${invasion.attackingFaction}</strong>
+                                    <div class="invasion-reward">${invasion.attackerReward?.asString || invasion.attackerReward?.itemString || 'Unknown'}</div>
+                                </div>
+                                <span class="invasion-vs">VS</span>
+                                <div class="invasion-faction defender">
+                                    <strong>${invasion.defendingFaction}</strong>
+                                    <div class="invasion-reward">${invasion.defenderReward?.asString || invasion.defenderReward?.itemString || 'Unknown'}</div>
+                                </div>
+                            </div>
+                            <div class="invasion-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill attacker-progress" style="width: ${completion}%"></div>
+                                    <div class="progress-fill defender-progress" style="width: ${100 - completion}%; margin-left: auto;"></div>
+                                </div>
+                                <span>${completion.toFixed(1)}% - ${(100 - completion).toFixed(1)}%</span>
+                            </div>
+                            ${invasion.desc ? `<div class="invasion-desc">${invasion.desc}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                invasionsList.innerHTML = '<div class="placeholder-message">No active invasions</div>';
+            }
+        }
+    } catch (error) {
+        console.error('Error updating invasions:', error);
+    }
+}
+
+// Update global upgrades
+async function updateGlobalUpgrades() {
+    try {
+        const upgrades = await warframeAPI.getGlobalUpgrades();
+        const upgradesSection = document.getElementById('upgradesSection');
+        const upgradesList = document.getElementById('upgradesList');
+        
+        if (upgradesSection && upgradesList) {
+            if (upgrades && upgrades.length > 0) {
+                upgradesSection.style.display = 'block';
+                upgradesList.innerHTML = upgrades.map(upgrade => {
+                    const timeRemaining = upgrade.eta ? formatTime(parseFloat(upgrade.eta)) : 'Unknown';
+                    
+                    return `
+                        <div class="upgrade-item">
+                            <div class="upgrade-header">
+                                <span class="upgrade-name">${upgrade.upgrade}</span>
+                                <span class="upgrade-value">${upgrade.operationSymbol || ''} ${upgrade.upgradeOperationValue || ''}${upgrade.operation || ''}</span>
+                            </div>
+                            ${upgrade.desc ? `<div class="upgrade-desc">${upgrade.desc}</div>` : ''}
+                            <div class="upgrade-timer">⏰ ${timeRemaining} remaining</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                upgradesList.innerHTML = '<div class="placeholder-message">No active bonuses</div>';
+            }
+        }
+    } catch (error) {
+        console.error('Error updating global upgrades:', error);
+    }
+}
+
+// Update Alerts and Events (legacy compatibility wrapper)
+async function updateAlertsAndEvents() {
+    await updateEvents();
+}
+
 // Format time function
 function formatTime(milliseconds) {
     const totalSeconds = Math.floor(milliseconds / 1000);
@@ -988,6 +1339,298 @@ function closeOverlay() {
     }
 }
 
+// Apply theme based on director theme setting
+function applyTheme() {
+    const body = document.body;
+    const content = document.getElementById('overlayContent');
+    
+    if (directorTheme) {
+        body.classList.add('director-theme');
+        convertToTabbedLayout();
+    } else {
+        body.classList.remove('director-theme');
+        convertToVerticalLayout();
+    }
+}
+
+// Store original layout HTML for restoration
+let originalLayoutHTML = null;
+
+// Convert layout to tabbed director-style
+function convertToTabbedLayout() {
+    const content = document.getElementById('overlayContent');
+    if (!content || content.dataset.converted === 'director') return;
+    
+    // Save original HTML before converting
+    if (!originalLayoutHTML) {
+        originalLayoutHTML = content.innerHTML;
+    }
+    
+    // Store original content - MOVE not clone to maintain DOM references
+    const timersSection = document.querySelector('.timers-section');
+    const fissuresSection = document.querySelector('.fissures-section');
+    const circuitSection = document.querySelector('.circuit-section');
+    const sortieSection = document.getElementById('sortieTimer');
+    const archonSection = document.getElementById('archonTimer');
+    const baroTimer = document.getElementById('baroTimer');
+    const arbitrationTimer = document.getElementById('arbitrationTimer');
+    const deimosTimer = document.getElementById('deimosTimer');
+    
+    console.log('Director theme - Found sections:', {
+        timersSection: !!timersSection,
+        fissuresSection: !!fissuresSection,
+        circuitSection: !!circuitSection,
+        sortieSection: !!sortieSection,
+        archonSection: !!archonSection,
+        eventsSection: !!document.getElementById('eventsSection'),
+        invasionsSection: !!document.getElementById('invasionsSection'),
+        upgradesSection: !!document.getElementById('upgradesSection')
+    });
+    
+    // Create tab container with icon-only headers (7 tabs: Timers, Alerts, Events, Fissures, Sortie, Archon, Circuit)
+    const tabContainer = document.createElement('div');
+    tabContainer.className = 'director-tabs';
+    tabContainer.innerHTML = `
+        <div class="director-tab-bar">
+            <div class="director-icon-tab" data-tab="timers">
+                <img src="images/planets/earth.png" class="director-icon" alt="World Timers" onerror="this.src='images/planets/warframe.png'">
+            </div>
+            <div class="director-icon-tab" data-tab="alerts">
+                <img src="images/logos/arbitrations.png" class="director-icon" alt="Alerts" onerror="this.src='images/logos/arbitration.png'">
+            </div>
+            <div class="director-icon-tab" data-tab="events">
+                <img src="images/missions/event.png" class="director-icon" alt="Events" onerror="this.src='images/planets/warframe.png'">
+            </div>
+            <div class="director-icon-tab" data-tab="fissures">
+                <img src="images/fissures/voidfissure.png" class="director-icon" alt="Void Fissures">
+            </div>
+            <div class="director-icon-tab" data-tab="sortie">
+                <img src="images/missions/sortie.png" class="director-icon" alt="Sortie" onerror="this.src='images/logos/sortie.png'">
+            </div>
+            <div class="director-icon-tab" data-tab="archon">
+                <img src="images/logos/archon.png" class="director-icon" alt="Archon Hunt" onerror="this.src='images/logos/archonhunt.png'">
+            </div>
+            <div class="director-icon-tab" data-tab="circuit">
+                <img src="images/logos/circuitlogo.png" class="director-icon" alt="Duviri Circuit">
+            </div>
+        </div>
+        
+        <div class="director-dropdown-container">
+            <div class="director-dropdown-content" id="tab-timers"></div>
+            <div class="director-dropdown-content" id="tab-alerts"></div>
+            <div class="director-dropdown-content" id="tab-events"></div>
+            <div class="director-dropdown-content" id="tab-fissures"></div>
+            <div class="director-dropdown-content" id="tab-sortie"></div>
+            <div class="director-dropdown-content" id="tab-archon"></div>
+            <div class="director-dropdown-content" id="tab-circuit"></div>
+        </div>
+    `;
+    
+    // Get tab content containers
+    const tabTimers = tabContainer.querySelector('#tab-timers');
+    const tabAlerts = tabContainer.querySelector('#tab-alerts');
+    const tabEvents = tabContainer.querySelector('#tab-events');
+    const tabFissures = tabContainer.querySelector('#tab-fissures');
+    const tabSortie = tabContainer.querySelector('#tab-sortie');
+    const tabArchon = tabContainer.querySelector('#tab-archon');
+    const tabCircuit = tabContainer.querySelector('#tab-circuit');
+    
+    // Create timers container with specific order: Daily, Weekly, Cetus, Fortuna, Deimos, Baro
+    const timersContainer = document.createElement('div');
+    timersContainer.className = 'timers-section';
+    
+    const dailyReset = document.getElementById('dailyResetTimer');
+    const weeklyReset = document.getElementById('weeklyResetTimer');
+    const cetusTimer = document.getElementById('cetusTimer');
+    const fortunaTimer = document.getElementById('fortunaTimer');
+    
+    if (dailyReset) timersContainer.appendChild(dailyReset);
+    if (weeklyReset) timersContainer.appendChild(weeklyReset);
+    if (cetusTimer) timersContainer.appendChild(cetusTimer);
+    if (fortunaTimer) timersContainer.appendChild(fortunaTimer);
+    if (deimosTimer) timersContainer.appendChild(deimosTimer);
+    if (baroTimer) timersContainer.appendChild(baroTimer);
+    
+    tabTimers.appendChild(timersContainer);
+    
+    // Create alerts container with Arbitration
+    const alertsContainer = document.createElement('div');
+    alertsContainer.className = 'timers-section';
+    if (arbitrationTimer) alertsContainer.appendChild(arbitrationTimer);
+    tabAlerts.appendChild(alertsContainer);
+    
+    // Create events container with Events, Invasions, and Global Upgrades
+    const eventsSection = document.getElementById('eventsSection');
+    const invasionsSection = document.getElementById('invasionsSection');
+    const upgradesSection = document.getElementById('upgradesSection');
+    
+    if (eventsSection) {
+        eventsSection.style.display = 'block';
+        const sectionTitle = eventsSection.querySelector('.section-title');
+        if (sectionTitle) sectionTitle.remove();
+        tabEvents.appendChild(eventsSection);
+    }
+    if (invasionsSection) {
+        invasionsSection.style.display = 'block';
+        const sectionTitle = invasionsSection.querySelector('.section-title');
+        if (sectionTitle) sectionTitle.remove();
+        tabEvents.appendChild(invasionsSection);
+    }
+    if (upgradesSection) {
+        upgradesSection.style.display = 'block';
+        const sectionTitle = upgradesSection.querySelector('.section-title');
+        if (sectionTitle) sectionTitle.remove();
+        tabEvents.appendChild(upgradesSection);
+    }
+    
+    // Move sortie to its own tab
+    if (sortieSection) {
+        sortieSection.style.display = 'block';
+        const sectionTitle = sortieSection.querySelector('.section-title');
+        if (sectionTitle) sectionTitle.remove();
+        tabSortie.appendChild(sortieSection);
+    }
+    
+    // Move archon hunt to its own tab
+    if (archonSection) {
+        archonSection.style.display = 'block';
+        const sectionTitle = archonSection.querySelector('.section-title');
+        if (sectionTitle) sectionTitle.remove();
+        tabArchon.appendChild(archonSection);
+    }
+    
+    if (fissuresSection) {
+        fissuresSection.style.display = 'block';
+        const sectionTitle = fissuresSection.querySelector('.section-title');
+        if (sectionTitle) sectionTitle.remove();
+        tabFissures.appendChild(fissuresSection);
+    }
+    
+    if (circuitSection) {
+        circuitSection.style.display = 'block';
+        const sectionTitle = circuitSection.querySelector('.section-title');
+        if (sectionTitle) sectionTitle.remove();
+        tabCircuit.appendChild(circuitSection);
+    }
+    
+    // Clear content and add tabs
+    content.innerHTML = '';
+    content.appendChild(tabContainer);
+    
+    // Set up icon click handlers
+    const iconTabs = tabContainer.querySelectorAll('.director-icon-tab');
+    iconTabs.forEach(tab => {
+        tab.addEventListener('click', () => toggleDirectorTab(tab));
+    });
+    
+    // Open the first tab (timers) by default
+    setTimeout(() => {
+        const firstTab = iconTabs[0];
+        if (firstTab) {
+            console.log('Opening first tab by default');
+            toggleDirectorTab(firstTab);
+        }
+    }, 200);
+    
+    // Re-initialize tab switching for fissures/circuit after moving to director theme
+    setTimeout(() => {
+        initializeTabSwitching();
+    }, 100);
+    
+    content.dataset.converted = 'director';
+}
+
+// Convert back to vertical layout
+function convertToVerticalLayout() {
+    const content = document.getElementById('overlayContent');
+    if (!content || content.dataset.converted !== 'director') return;
+    
+    // Restore original HTML
+    if (originalLayoutHTML) {
+        content.innerHTML = originalLayoutHTML;
+        content.dataset.converted = '';
+        
+        // Re-initialize tab switching and update timers
+        setTimeout(() => {
+            initializeTabSwitching();
+            updateAllTimers();
+        }, 100);
+    } else {
+        // Fallback to reload if original HTML wasn't saved
+        location.reload();
+    }
+}
+
+// Toggle director icon tab
+function toggleDirectorTab(iconTab) {
+    const tabName = iconTab.dataset.tab;
+    const allIconTabs = document.querySelectorAll('.director-icon-tab');
+    const allContents = document.querySelectorAll('.director-dropdown-content');
+    const targetContent = document.getElementById(`tab-${tabName}`);
+    
+    console.log('toggleDirectorTab called for:', tabName);
+    console.log('Target content found:', !!targetContent);
+    if (targetContent) {
+        console.log('Target content children:', targetContent.children.length);
+        console.log('Target content innerHTML length:', targetContent.innerHTML.length);
+    }
+    
+    // Check if this tab is already active
+    const isActive = iconTab.classList.contains('active');
+    console.log('Tab currently active:', isActive);
+    
+    // Close all tabs
+    allIconTabs.forEach(tab => tab.classList.remove('active'));
+    allContents.forEach(content => content.classList.remove('active'));
+    
+    // If it wasn't active, open this tab
+    if (!isActive) {
+        iconTab.classList.add('active');
+        if (targetContent) {
+            targetContent.classList.add('active');
+            console.log('Tab activated:', tabName, 'Content active class added');
+        } else {
+            console.error('Target content not found for tab:', tabName);
+        }
+        activeDirectorTab = tabName;
+    } else {
+        activeDirectorTab = null;
+        console.log('Tab closed:', tabName);
+    }
+}
+
+// Toggle tab open/close (old function kept for compatibility)
+function toggleTab(header) {
+    const tabName = header.dataset.tab;
+    const content = header.nextElementSibling;
+    const arrow = header.querySelector('.director-tab-arrow');
+    
+    // Close other tabs
+    const allHeaders = document.querySelectorAll('.director-tab-header');
+    allHeaders.forEach(h => {
+        if (h !== header) {
+            h.classList.remove('active');
+            h.nextElementSibling.classList.remove('active');
+            const otherArrow = h.querySelector('.director-tab-arrow');
+            if (otherArrow) otherArrow.textContent = '▼';
+        }
+    });
+    
+    // Toggle this tab
+    const isActive = header.classList.contains('active');
+    if (isActive) {
+        header.classList.remove('active');
+        content.classList.remove('active');
+        arrow.textContent = '▼';
+        activeDirectorTab = null;
+    } else {
+        header.classList.add('active');
+        content.classList.add('active');
+        arrow.textContent = '▲';
+        activeDirectorTab = tabName;
+    }
+}
+
 // IPC Communication handlers
 if (window.electronAPI) {
     // window.electronAPI.onOverlayVisibilityChange((visible) => {
@@ -1022,6 +1665,12 @@ if (document.readyState === 'loading') {
 // Listen for settings updates from main process
 window.electronAPI.onSettingsUpdated((settings) => {
     console.log('Settings updated in overlay:', settings);
+    
+    // Update theme
+    if (settings.directorTheme !== undefined) {
+        directorTheme = settings.directorTheme;
+        applyTheme();
+    }
     
     // Update timer visibility based on settings
     const timerElements = {

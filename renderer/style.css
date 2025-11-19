@@ -37,18 +37,18 @@ body.overlay-window {
     width: 100vw;
     border-radius: 15px;
     backdrop-filter: blur(10px);
-    border: 2px solid rgba(0, 150, 255, 0.3);
+    border: 2px solid rgba(0, 100, 200, 0.3);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 26, 51, 0.5) 50%, rgba(0, 51, 102, 0.5) 100%);
+    background: linear-gradient(135deg, rgba(10, 30, 60, 0.6) 0%, rgba(0, 20, 50, 0.6) 50%, rgba(0, 30, 70, np0.6) 100%);
     display: flex;
     flex-direction: column;
 }
 
 /* Header */
 .overlay-header {
+    display: none;
     background: linear-gradient(90deg, rgba(0, 150, 255, 0.8) 0%, rgba(0, 100, 200, 0.8));
     padding: 6px 12px;
-    display: flex;
     justify-content: space-between;
     align-items: center;
     border-radius: 13px 13px 0 0;
@@ -60,7 +60,7 @@ body.overlay-window {
 /* Content */
 .overlay-content {
     flex: 1;
-    padding: 15px;
+    padding: 15px 15px 0 15px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -69,8 +69,8 @@ body.overlay-window {
 
 /* Section Cards */
 .timers-section {
-    background: linear-gradient(135deg, rgba(0, 26, 51, 0.7) 0%, rgba(0, 51, 102, 0.5) 100%);
-    border: 2px solid rgba(0, 150, 255, 0.2);
+    background: linear-gradient(135deg, rgba(10, 30, 60, 0.7) 0%, rgba(0, 20, 50, 0.5) 100%);
+    border: 2px solid rgba(0, 100, 200, 0.2);
     border-radius: 12px;
     padding: 15px;
     backdrop-filter: blur(5px);
@@ -78,8 +78,8 @@ body.overlay-window {
 }
 
 .fissures-section, .circuit-section {
-    background: linear-gradient(135deg, rgba(0, 26, 51, 0.7) 0%, rgba(0, 51, 102, 0.5) 100%);
-    border: 2px solid rgba(0, 150, 255, 0.2);
+    background: linear-gradient(135deg, rgba(10, 30, 60, 0.7) 0%, rgba(0, 20, 50, 0.5) 100%);
+    border: 2px solid rgba(0, 100, 200, 0.2);
     border-radius: 12px;
     padding: 15px;
     backdrop-filter: blur(5px);
@@ -155,8 +155,7 @@ body.overlay-window {
 
 /* Content */
 .overlay-content {
-    padding: 15px;
-    max-height: 600px;
+    padding: 15px 15px 0 15px;
     overflow-y: auto;
 }
 
@@ -328,7 +327,18 @@ body.overlay-window {
 .fissure-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    max-height: none;
+    overflow-y: visible;
+    padding: 0;
+}
+
+/* Make fissure list scrollable in director theme */
+.director-theme .fissure-list {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    padding-right: 8px;
+    padding-bottom: 10px;
 }
 
 .fissure-item {
@@ -336,6 +346,7 @@ body.overlay-window {
     border: 1px solid rgba(0, 150, 255, 0.3);
     border-radius: 10px;
     padding: 12px 15px;
+    margin-bottom: 0;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1661,4 +1672,682 @@ body.settings-window::before {
     .footer {
         padding: 15px 25px;
     }
+}
+
+/* ===================================
+   SORTIE STYLES
+   =================================== */
+
+.sortie-section {
+    background: linear-gradient(135deg, rgba(10, 30, 60, 0.7) 0%, rgba(0, 20, 50, 0.5) 100%);
+    border: 2px solid rgba(0, 100, 200, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: block;
+}
+
+.sortie-countdown {
+    text-align: right;
+    font-size: 13px;
+    color: #ffffff;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.sortie-missions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sortie-mission-item {
+    display: flex;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(100, 100, 100, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.sortie-mission-item:hover {
+    background: rgba(20, 20, 20, 0.6);
+    border-color: rgba(150, 150, 150, 0.5);
+}
+
+.sortie-mission-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.sortie-mission-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.sortie-mission-type {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sortie-mission-location {
+    font-size: 14px;
+    color: #b0b0b0;
+    font-weight: 500;
+}
+
+.sortie-mission-condition {
+    font-size: 12px;
+    color: #ff6b6b;
+    margin-top: 4px;
+}
+
+.sortie-mission-description {
+    font-size: 12px;
+    color: #999;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+/* ===================================
+   ARCHON HUNT STYLES
+   =================================== */
+
+.archon-section {
+    background: linear-gradient(135deg, rgba(10, 30, 60, 0.7) 0%, rgba(0, 20, 50, 0.5) 100%);
+    border: 2px solid rgba(0, 100, 200, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: block;
+}
+
+.archon-countdown {
+    text-align: right;
+    font-size: 13px;
+    color: #ffffff;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.archon-boss-banner {
+    background: linear-gradient(135deg, rgba(0, 100, 100, 0.4) 0%, rgba(0, 60, 80, 0.4) 100%);
+    border: 2px solid rgba(0, 150, 150, 0.3);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.archon-boss-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 100%;
+    background: url('images/logos/archon-bg.png') no-repeat center;
+    background-size: contain;
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.archon-boss-name {
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.archon-rewards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.archon-rewards-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #999;
+    letter-spacing: 1px;
+}
+
+.archon-reward-text {
+    font-size: 13px;
+    color: #ffffff;
+    line-height: 1.6;
+}
+
+.archon-missions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.archon-mission-item {
+    display: flex;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(100, 100, 100, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.archon-mission-item:hover {
+    background: rgba(20, 20, 20, 0.6);
+    border-color: rgba(150, 150, 150, 0.5);
+}
+
+.archon-mission-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.archon-mission-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.archon-mission-type {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.archon-mission-location {
+    font-size: 14px;
+    color: #b0b0b0;
+    font-weight: 500;
+}
+
+/* ===================================
+   DIRECTOR THEME STYLES
+   (Warframe in-game director interface - ICON BAR AT TOP)
+   =================================== */
+
+.director-theme .overlay-content {
+    padding: 0;
+    gap: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Director tabs container */
+.director-tabs {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+/* Icon bar at the top - horizontal row of icons */
+.director-tab-bar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    background: rgba(0, 0, 0, 0.9);
+    border-bottom: 1px solid rgba(100, 100, 100, 0.3);
+    flex-shrink: 0;
+}
+
+/* Individual icon tab */
+.director-icon-tab {
+    width: 70px;
+    height: 60px;
+    padding: 12px;
+    background: rgba(20, 20, 20, 0.8);
+    border: none;
+    border-right: 1px solid rgba(80, 80, 80, 0.5);
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: visible;
+}
+
+.director-icon-tab::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(200, 200, 200, 0.8);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.director-icon-tab:hover {
+    background: rgba(40, 40, 40, 0.9);
+}
+
+.director-icon-tab:hover::before {
+    opacity: 1;
+}
+
+.director-icon-tab.active {
+    background: rgba(50, 50, 50, 1);
+}
+
+.director-icon-tab.active::before {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* Icon inside the tab */
+.director-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    filter: brightness(0.8);
+    transition: all 0.2s ease;
+}
+
+.director-icon-tab:hover .director-icon {
+    filter: brightness(1.1);
+}
+
+.director-icon-tab.active .director-icon {
+    filter: brightness(1.2);
+}
+
+/* Dropdown container for content */
+.director-dropdown-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Dropdown content */
+.director-dropdown-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.2s ease-out, padding 0.3s ease-out;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.director-dropdown-content.active {
+    position: relative;
+    max-height: calc(100vh - 100px);
+    height: auto;
+    opacity: 1;
+    padding: 15px;
+    padding-bottom: 30px;
+    animation: directorDropDown 0.3s ease-out;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+}
+
+@keyframes directorDropDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Adjust content inside director theme */
+.director-theme .timer-item {
+    background: linear-gradient(135deg, rgba(0, 51, 102, 0.4) 0%, rgba(0, 26, 51, 0.3) 100%);
+    border: 1px solid rgba(0, 150, 255, 0.2);
+    margin-bottom: 8px;
+}
+
+.director-theme .timer-item:hover {
+    background: linear-gradient(135deg, rgba(0, 51, 102, 0.6) 0%, rgba(0, 26, 51, 0.5) 100%);
+    border-color: rgba(0, 150, 255, 0.4);
+}
+
+/* Fissures in director theme */
+.director-theme .fissure-item {
+    background: linear-gradient(135deg, rgba(0, 51, 102, 0.3) 0%, rgba(0, 26, 51, 0.2) 100%);
+    border-left: 3px solid #0096ff;
+    margin-bottom: 6px;
+    padding: 10px;
+}
+
+.director-theme .fissure-item:hover {
+    background: linear-gradient(135deg, rgba(0, 51, 102, 0.5) 0%, rgba(0, 26, 51, 0.4) 100%);
+    border-left-color: #00ffff;
+}
+
+/* Fissure tier colors */
+.director-theme .fissure-item.lith {
+    border-left-color: #d4af37;
+}
+
+.director-theme .fissure-item.meso {
+    border-left-color: #c0c0c0;
+}
+
+.director-theme .fissure-item.neo {
+    border-left-color: #cd7f32;
+}
+
+.director-theme .fissure-item.axi {
+    border-left-color: #ffd700;
+}
+
+.director-theme .fissure-item.requiem {
+    border-left-color: #ff0000;
+}
+
+/* Arbitration card in director theme */
+.director-theme .arb-mission-card {
+    border: 2px solid rgba(0, 150, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Circuit in director theme */
+.director-theme .circuit-rotation {
+    background: linear-gradient(135deg, rgba(0, 51, 102, 0.4) 0%, rgba(0, 26, 51, 0.3) 100%);
+    border: 1px solid rgba(0, 150, 255, 0.2);
+}
+
+/* Remove section titles in director theme */
+.director-theme .director-dropdown-content .section-title {
+    display: none;
+}
+
+/* Adjust spacing */
+.director-theme .timers-section {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.director-theme .fissures-section,
+.director-theme .circuit-section,
+.director-theme .sortie-section,
+.director-theme .archon-section {
+    padding: 0;
+    padding-bottom: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+.director-theme .circuit-section {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* Events Section Styling */
+.events-section, .invasions-section, .upgrades-section {
+    padding: 15px;
+    background: rgba(10, 30, 60, 0.7);
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.event-item {
+    background: rgba(20, 40, 80, 0.5);
+    border-left: 4px solid rgba(0, 150, 255, 0.8);
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.event-description {
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.event-faction {
+    color: #64b5f6;
+    font-size: 12px;
+    padding: 2px 8px;
+    background: rgba(100, 181, 246, 0.2);
+    border-radius: 10px;
+}
+
+.event-node {
+    color: #90caf9;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.event-timer {
+    color: #ffa726;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.event-progress {
+    margin-top: 8px;
+}
+
+.event-rewards {
+    margin-top: 8px;
+    color: #81c784;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Invasions Styling */
+.invasion-item {
+    background: rgba(20, 40, 80, 0.5);
+    border-left: 4px solid rgba(255, 87, 34, 0.8);
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+}
+
+.invasion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.invasion-node {
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.invasion-eta {
+    color: #ffa726;
+    font-size: 12px;
+}
+
+.invasion-factions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.invasion-faction {
+    flex: 1;
+    text-align: center;
+}
+
+.invasion-faction.attacker {
+    color: #ef5350;
+}
+
+.invasion-faction.defender {
+    color: #66bb6a;
+}
+
+.invasion-vs {
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.invasion-reward {
+    font-size: 12px;
+    margin-top: 4px;
+    color: #90caf9;
+}
+
+.invasion-progress {
+    margin-top: 10px;
+}
+
+.invasion-progress .progress-bar {
+    display: flex;
+    height: 20px;
+}
+
+.invasion-progress .attacker-progress {
+    background: linear-gradient(90deg, rgba(239, 83, 80, 0.8), rgba(239, 83, 80, 0.4));
+}
+
+.invasion-progress .defender-progress {
+    background: linear-gradient(90deg, rgba(102, 187, 106, 0.4), rgba(102, 187, 106, 0.8));
+}
+
+.invasion-desc {
+    margin-top: 8px;
+    color: #b0bec5;
+    font-size: 11px;
+    font-style: italic;
+}
+
+/* Global Upgrades Styling */
+.upgrade-item {
+    background: rgba(20, 40, 80, 0.5);
+    border-left: 4px solid rgba(129, 199, 132, 0.8);
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+}
+
+.upgrade-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.upgrade-name {
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.upgrade-value {
+    color: #81c784;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.upgrade-desc {
+    color: #90caf9;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.upgrade-timer {
+    color: #ffa726;
+    font-size: 12px;
+}
+
+/* Progress bar generic styling */
+.progress-bar {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    height: 20px;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, rgba(0, 150, 255, 0.8), rgba(0, 200, 255, 0.6));
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+/* Placeholder messages */
+.placeholder-message {
+    text-align: center;
+    color: #78909c;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Arbitration mission details */
+.arbitration-mission {
+    font-size: 12px;
+    color: #90caf9;
+    margin-bottom: 4px;
+}
+
+/* Director theme adjustments for new sections */
+.director-theme .events-section,
+.director-theme .invasions-section,
+.director-theme .upgrades-section {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin-bottom: 0;
+}
+
+/* Hide events/invasions/upgrades in vertical mode by default */
+body:not(.director-theme) .events-section,
+body:not(.director-theme) .invasions-section,
+body:not(.director-theme) .upgrades-section {
+    display: none;
+}
+
+/* Hide events/invasions/upgrades in vertical mode by default */
+body:not(.director-theme) .events-section,
+body:not(.director-theme) .invasions-section,
+body:not(.director-theme) .upgrades-section {
+    display: none;
 }

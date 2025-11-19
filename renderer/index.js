@@ -45,11 +45,16 @@ async function loadSettings() {
         document.getElementById('fortunaCycle').checked = settings.fortunaCycle !== false;
         document.getElementById('deimosCycle').checked = settings.deimosCycle !== false;
         document.getElementById('arbitrationTimer').checked = settings.arbitrationTimer !== false;
+        document.getElementById('sortieTimer').checked = settings.sortieTimer !== false;
+        document.getElementById('archonTimer').checked = settings.archonTimer !== false;
         document.getElementById('baroTimer').checked = settings.baroTimer !== false;
         document.getElementById('voidFissures').checked = settings.voidFissures !== false;
         document.getElementById('circuit').checked = settings.circuit !== false;
         document.getElementById('alerts').checked = settings.alerts !== false;
+        document.getElementById('events').checked = settings.events !== false;
         document.getElementById('invasions').checked = settings.invasions !== false;
+        document.getElementById('globalUpgrades').checked = settings.globalUpgrades !== false;
+        document.getElementById('directorTheme').checked = settings.directorTheme === true;
         
     } catch (error) {
         console.error('Error loading settings:', error);
@@ -98,11 +103,16 @@ async function handleFormSubmit(event) {
             fortunaCycle: document.getElementById('fortunaCycle').checked,
             deimosCycle: document.getElementById('deimosCycle').checked,
             arbitrationTimer: document.getElementById('arbitrationTimer').checked,
+            sortieTimer: document.getElementById('sortieTimer').checked,
+            archonTimer: document.getElementById('archonTimer').checked,
             baroTimer: document.getElementById('baroTimer').checked,
             voidFissures: document.getElementById('voidFissures').checked,
             circuit: document.getElementById('circuit').checked,
             alerts: document.getElementById('alerts').checked,
-            invasions: document.getElementById('invasions').checked
+            events: document.getElementById('events').checked,
+            invasions: document.getElementById('invasions').checked,
+            globalUpgrades: document.getElementById('globalUpgrades').checked,
+            directorTheme: document.getElementById('directorTheme').checked
         };
         
         console.log('Saving settings:', settings);

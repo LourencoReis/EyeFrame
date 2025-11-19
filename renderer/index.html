@@ -90,6 +90,28 @@
 
                 <div class="checkbox-group">
                     <label class="checkbox-item">
+                        <input type="checkbox" id="sortieTimer" name="sortieTimer" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Sortie</span>
+                            <span class="timer-description">Daily high-level mission series</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="archonTimer" name="archonTimer" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Archon Hunt</span>
+                            <span class="timer-description">Weekly Archon mission series</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
                         <input type="checkbox" id="baroTimer" name="baroTimer" checked>
                         <span class="checkmark"></span>
                         <div class="timer-info">
@@ -126,8 +148,19 @@
                         <input type="checkbox" id="alerts" name="alerts" checked>
                         <span class="checkmark"></span>
                         <div class="timer-info">
-                            <span class="timer-name">Alerts & Events</span>
-                            <span class="timer-description">Active alerts and special events</span>
+                            <span class="timer-name">Alerts & Arbitrations</span>
+                            <span class="timer-description">Active alerts and Steel Path arbitrations</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="events" name="events" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Events</span>
+                            <span class="timer-description">Special in-game events and operations</span>
                         </div>
                     </label>
                 </div>
@@ -138,7 +171,18 @@
                         <span class="checkmark"></span>
                         <div class="timer-info">
                             <span class="timer-name">Invasions</span>
-                            <span class="timer-description">Faction conflicts and rewards</span>
+                            <span class="timer-description">Faction conflicts and invasion rewards</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="globalUpgrades" name="globalUpgrades" checked>
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Global Upgrades</span>
+                            <span class="timer-description">Active global bonuses and resource boosts</span>
                         </div>
                     </label>
                 </div>
@@ -159,6 +203,17 @@
  <!-- Overlay Settings Section -->
             <div class="section">
                 <h2>Overlay Settings</h2>
+                
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="directorTheme" name="directorTheme">
+                        <span class="checkmark"></span>
+                        <div class="timer-info">
+                            <span class="timer-name">Director Theme</span>
+                            <span class="timer-description">Use tabbed interface like in-game director (tabs at top, dropdown content)</span>
+                        </div>
+                    </label>
+                </div>
                 
                 <div class="overlay-controls">
                     <button type="button" id="toggleOverlay" class="control-btn primary-btn">
