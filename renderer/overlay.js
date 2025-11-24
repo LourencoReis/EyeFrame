@@ -154,10 +154,11 @@ async function loadInitialSettings() {
             console.log(`Duviri Circuit: ${settings.circuit !== false ? 'shown' : 'hidden'}`);
         }
 
+        // Always show alerts section since it contains arbitration
         const alertsSection = document.getElementById('alertsSection');
         if (alertsSection) {
-            alertsSection.style.display = settings.alerts !== false ? 'block' : 'none';
-            console.log(`Alerts & Events: ${settings.alerts !== false ? 'shown' : 'hidden'}`);
+            alertsSection.style.display = 'block';
+            console.log('Alerts section: shown (contains arbitration)');
         }
 
         const invasionsSection = document.getElementById('invasionsSection');
@@ -642,8 +643,10 @@ async function updateAlertsAndEvents() {
         const alertsList = document.getElementById('alertsList');
         
         if (alertsSection && alertsList) {
+            // Always show the alerts section since it now contains arbitration
+            alertsSection.style.display = 'block';
+            
             if (alerts && alerts.length > 0) {
-                alertsSection.style.display = 'block';
                 alertsList.innerHTML = alerts.map(alert => `
                     <div class="alert-item">
                         <div class="alert-mission">${alert.mission?.node || alert.node || 'Unknown'} - ${alert.mission?.type || alert.missionType || 'Alert'}</div>
@@ -652,7 +655,7 @@ async function updateAlertsAndEvents() {
                     </div>
                 `).join('');
             } else {
-                alertsSection.style.display = 'none';
+                alertsList.innerHTML = '<div class="placeholder-message">No active alerts</div>';
             }
         }
         
@@ -1392,26 +1395,32 @@ function convertToTabbedLayout() {
     tabContainer.className = 'director-tabs';
     tabContainer.innerHTML = `
         <div class="director-tab-bar">
-            <div class="director-icon-tab" data-tab="timers">
-                <img src="images/planets/earth.png" class="director-icon" alt="World Timers" onerror="this.src='images/planets/warframe.png'">
+            <div class="director-controls">
+                <button class="director-control-btn minimize-btn" title="Minimize">−</button>
+                <button class="director-control-btn close-btn" title="Close">✕</button>
             </div>
-            <div class="director-icon-tab" data-tab="alerts">
-                <img src="images/logos/arbitrations.png" class="director-icon" alt="Alerts" onerror="this.src='images/logos/arbitration.png'">
-            </div>
-            <div class="director-icon-tab" data-tab="events">
-                <img src="images/missions/event.png" class="director-icon" alt="Events" onerror="this.src='images/planets/warframe.png'">
-            </div>
-            <div class="director-icon-tab" data-tab="fissures">
-                <img src="images/fissures/voidfissure.png" class="director-icon" alt="Void Fissures">
-            </div>
-            <div class="director-icon-tab" data-tab="sortie">
-                <img src="images/missions/sortie.png" class="director-icon" alt="Sortie" onerror="this.src='images/logos/sortie.png'">
-            </div>
-            <div class="director-icon-tab" data-tab="archon">
-                <img src="images/logos/archon.png" class="director-icon" alt="Archon Hunt" onerror="this.src='images/logos/archonhunt.png'">
-            </div>
-            <div class="director-icon-tab" data-tab="circuit">
-                <img src="images/logos/circuitlogo.png" class="director-icon" alt="Duviri Circuit">
+            <div class="director-tab-icons">
+                <div class="director-icon-tab" data-tab="timers">
+                    <img src="images/planets/earth.png" class="director-icon" alt="World Timers" onerror="this.src='images/planets/warframe.png'">
+                </div>
+                <div class="director-icon-tab" data-tab="alerts">
+                    <img src="images/logos/arbitrations.png" class="director-icon" alt="Alerts" onerror="this.src='images/logos/arbitration.png'">
+                </div>
+                <div class="director-icon-tab" data-tab="events">
+                    <img src="images/missions/event.png" class="director-icon" alt="Events" onerror="this.src='images/planets/warframe.png'">
+                </div>
+                <div class="director-icon-tab" data-tab="fissures">
+                    <img src="images/fissures/voidfissure.png" class="director-icon" alt="Void Fissures">
+                </div>
+                <div class="director-icon-tab" data-tab="sortie">
+                    <img src="images/missions/sortie.png" class="director-icon" alt="Sortie" onerror="this.src='images/logos/sortie.png'">
+                </div>
+                <div class="director-icon-tab" data-tab="archon">
+                    <img src="images/logos/archon.png" class="director-icon" alt="Archon Hunt" onerror="this.src='images/logos/archonhunt.png'">
+                </div>
+                <div class="director-icon-tab" data-tab="circuit">
+                    <img src="images/logos/circuitlogo.png" class="director-icon" alt="Duviri Circuit">
+                </div>
             </div>
         </div>
         
@@ -1517,10 +1526,39 @@ function convertToTabbedLayout() {
     content.innerHTML = '';
     content.appendChild(tabContainer);
     
+    // Create minimized tab
+    const minimizedTab = document.createElement('div');
+    minimizedTab.className = 'director-minimized-tab';
+    minimizedTab.innerHTML = '<div class="expand-icon">+</div>';
+    content.appendChild(minimizedTab);
+    
     // Set up icon click handlers
     const iconTabs = tabContainer.querySelectorAll('.director-icon-tab');
     iconTabs.forEach(tab => {
         tab.addEventListener('click', () => toggleDirectorTab(tab));
+    });
+    
+    // Set up control button handlers
+    const minimizeBtn = tabContainer.querySelector('.minimize-btn');
+    const closeBtn = tabContainer.querySelector('.close-btn');
+    
+    if (minimizeBtn) {
+        minimizeBtn.addEventListener('click', () => {
+            tabContainer.classList.add('minimized');
+            minimizedTab.style.display = 'flex';
+        });
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            closeOverlay();
+        });
+    }
+    
+    // Set up minimized tab expand handler
+    minimizedTab.addEventListener('click', () => {
+        tabContainer.classList.remove('minimized');
+        minimizedTab.style.display = 'none';
     });
     
     // Open the first tab (timers) by default
@@ -1709,9 +1747,10 @@ window.electronAPI.onSettingsUpdated((settings) => {
         circuitSection.style.display = settings.circuit !== false ? 'block' : 'none';
     }
 
+    // Always show alerts section since it contains arbitration
     const alertsSection = document.getElementById('alertsSection');
     if (alertsSection) {
-        alertsSection.style.display = settings.alerts !== false ? 'block' : 'none';
+        alertsSection.style.display = 'block';
     }
 
     const invasionsSection = document.getElementById('invasionsSection');

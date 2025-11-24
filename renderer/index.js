@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     
     // Initialize overlay button text
-    toggleOverlayBtn.innerHTML = overlayVisible ? '👁️ Hide Overlay' : '🚀 Show Overlay';
+    toggleOverlayBtn.innerHTML = overlayVisible ? '🔒 Close Overlay' : '🚀 Open Overlay';
 });
 
 /**
@@ -172,8 +172,8 @@ async function handleToggleOverlay() {
             // Then show it
             const result = await window.electronAPI.toggleOverlay(true);
             if (result.success) {
-                toggleOverlayBtn.innerHTML = '👁️ Hide Overlay';
-                showStatus('Overlay shown', 'success');
+                toggleOverlayBtn.innerHTML = '🔒 Close Overlay';
+                showStatus('Overlay opened', 'success');
             } else {
                 throw new Error('Failed to show overlay');
             }
@@ -181,8 +181,8 @@ async function handleToggleOverlay() {
             // Hide the overlay
             const result = await window.electronAPI.toggleOverlay(false);
             if (result.success) {
-                toggleOverlayBtn.innerHTML = '🚀 Show Overlay';
-                showStatus('Overlay hidden', 'success');
+                toggleOverlayBtn.innerHTML = '🚀 Open Overlay';
+                showStatus('Overlay closed', 'success');
             } else {
                 throw new Error('Failed to hide overlay');
             }
