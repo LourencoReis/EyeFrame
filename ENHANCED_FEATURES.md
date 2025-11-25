@@ -1,92 +1,171 @@
-# 🎯 EYEFRAME ENHANCED FEATURES - Complete Implementation Guide
+# EYEFRAME ENHANCED FEATURES - Complete Implementation Guide
 
-## 🌟 **What Was Implemented**
+## What Is Implemented
 
-Your Eyeframe app has been completely enhanced with all the features you requested! Here's everything that was added:
+Your Eyeframe app is a fully-featured Warframe overlay with real-time API integration and dual theme system! Here's everything that works:
 
 ---
 
-## 🔧 **NEW FEATURES ADDED**
+## IMPLEMENTED FEATURES
 
-### 1. **📷 Image Support System**
-- **Purpose**: Display visual icons for all timers, fissures, and circuit rewards
-- **Location**: `renderer/images/` folder structure created
-- **Folders Created**:
+### 1. Real-Time API Integration
+- **Purpose**: Display live Warframe game data
+- **API Source**: api.tenno.tools/worldstate/pc
+- **Connected Systems**:
+  - **Cetus Cycle**: Live day/night status and countdown
+  - **Fortuna Cycle**: Live warm/cold status and countdown
+  - **Deimos Cycle**: Live Vome/Fass status and countdown
+  - **Void Fissures**: Real-time fissure missions with expiry timers
+  - **Invasions**: Active invasions with progress tracking
+  - **Sortie**: Daily sortie missions with reset timer
+  - **Archon Hunt**: Weekly archon hunt tracking
+  - **Events**: Active in-game events
+  - **Arbitrations**: Steel Path arbitration rotations
+- **Update Frequency**: Every 1 second for accurate countdowns
+- **Timestamp Handling**: API returns Unix seconds, converted to milliseconds for JavaScript
+
+### 2. Dual Theme System
+- **Purpose**: Two distinct viewing modes for different preferences
+- **Normal Theme**:
+  - Vertical scrolling layout
+  - All sections visible at once
+  - Lower opacity (0.4) for game transparency
+  - Order: Timers → Fissures → Circuit → Alerts → Events → Invasions → Sortie → Archon
+- **Director Theme**:
+  - Tabbed icon interface
+  - 7 clickable tabs with icon navigation
+  - Dropdown content areas
+  - Control buttons at top-right
+  - Minimized state with (+) expand icon
+- **Theme Switching**: Controlled via settings window, saved persistently
+
+### 3. Complete Image Support System
+- **Purpose**: Visual icons for all content types
+- **Image Folders**:
   ```
   images/
-  ├── planets/           # Timer icons (Earth, Cetus, Fortuna, etc.)
-  ├── fissures/          # Relic tier icons (Lith, Meso, Neo, Axi, Requiem)
+  ├── planets/          # Earth, Cetus, Fortuna, Deimos, Baro icons
+  ├── fissures/         # Lith, Meso, Neo, Axi, Requiem tier icons
+  ├── missions/         # Mission type icons (Defense, Survival, etc.)
+  ├── logos/            # App branding and section logos
   └── circuit/
-      ├── warframes/     # Warframe portraits
-      └── weapons/       # Weapon images
+      ├── warframes/    # Warframe portraits for Circuit
+      └── weapons/      # Weapon images for Circuit
   ```
-- **How to Use**: Simply add your Warframe images to these folders with the specified names
-- **Benefits**: Visual identification makes timers easier to read at a glance
+- **Fallback Handling**: Images gracefully hide with `onerror="this.style.display='none'"`
+- **Icon Sizes**: Optimized at 32x32 pixels for consistent display
 
-### 2. **🌀 Void Fissures Section**
-- **Purpose**: Display current void fissure missions with timers
+### 4. Void Fissures Section
+- **Purpose**: Display all active void fissure missions
 - **Features**:
-  - ✅ **Normal Fissures Tab**: Regular relic missions
-  - ✅ **Steel Path Fissures Tab**: Enhanced difficulty missions
-  - ✅ **Live Timers**: Real-time countdown for each fissure
-  - ✅ **Mission Details**: Shows mission type and location
-  - ✅ **Tier Icons**: Visual indicators for Lith, Meso, Neo, Axi, Requiem
-- **Current Display**: Shows 4 normal fissures + steel path fissures
-- **Interactive**: Click tabs to switch between Normal and Steel Path
+  - **Normal/Steel Path Tabs**: Switch between fissure types
+  - **Live Countdowns**: Each fissure updates every second
+  - **Mission Details**: Shows mission type, node, planet
+  - **Tier Icons**: Visual indicators for relic tiers
+  - **Tier Grouping**: Organized by Lith, Meso, Neo, Axi order
+  - **API-Driven**: Fetches real fissures from Warframe API
+- **Display**: Scrollable list with no bottom padding
 
-### 3. **🎯 The Circuit Section**
-- **Purpose**: Display current Circuit rotation rewards
+### 5. The Circuit Section
+- **Purpose**: Display current Duviri Circuit rotation
 - **Features**:
-  - ✅ **Normal Circuit Tab**: Standard Circuit rewards
-  - ✅ **Steel Path Circuit Tab**: Steel Path Circuit rewards
-  - ✅ **Warframe Display**: Grid showing available warframes with images
-  - ✅ **Weapon Display**: Grid showing available weapons with images
-  - ✅ **Visual Grid Layout**: Clean organized display
-- **Current Rewards**:
-  - **Normal**: Garuda, Baruuk, Hildryn + 5 weapons
-  - **Steel Path**: Wisp, Protea + premium weapons
-- **Interactive**: Hover effects and click to switch tabs
+  - **Normal/Steel Path Tabs**: Different rewards per difficulty
+  - **Warframe Display**: Shows available warframes with portraits
+  - **Weapon Display**: Shows available weapons with images
+  - **Grid Layout**: Organized visual presentation
+- **Current Data**: Fetched from API for accurate rotation info
+
+### 6. Alerts & Arbitrations Section
+- **Purpose**: Track time-sensitive missions
+- **Features**:
+  - **Always Visible**: Alerts section never hidden (overrides settings)
+  - **Arbitration Timer**: Steel Path arbitration rotation tracking
+  - **Alert Missions**: Active in-game alerts when available
+  - **API Integration**: Live data from Warframe API
+- **Location**: Moved arbitration from World Timers to Alerts for better organization
 
 ---
 
-## 🎨 **ENHANCED VISUAL DESIGN**
+## VISUAL DESIGN SYSTEM
 
-### **New Layout Structure**
-- **Expanded Window**: Increased from 300x320 to 450x650 pixels
-- **Section Organization**: Three main sections with clear headers
-- **Tab System**: Easy switching between Normal/Steel Path content
-- **Image Integration**: Icons next to every timer and reward item
+### Normal Theme (Default)
+- **Layout**: Vertical scrolling, all sections visible
+- **Background**: Black-to-blue gradient with 0.4 opacity
+- **Padding**: 15px on top/sides, 0px on bottom for compact fit
+- **Scrolling**: Smooth scrolling with custom blue-themed scrollbar
+- **Section Order**: Optimized for frequency of use
 
-### **Enhanced Black-to-Blue Gradient Theme**
-- **Background**: Deep black to blue gradient maintained
-- **Section Headers**: Blue accent with left border
-- **Item Cards**: Layered gradients with hover effects
-- **Tab Buttons**: Active state highlighting
-- **Status Indicators**: Color-coded timer states (Day/Night, Warm/Cold, etc.)
+### Director Theme (Tabbed)
+- **Layout**: Icon-based tabs with dropdown content
+- **Tab Bar**: Vertical layout with controls at top
+- **7 Tabs**: 
+  1. **Timers** - World cycles and resets
+  2. **Alerts** - Arbitrations and alerts
+  3. **Events** - Active game events
+  4. **Fissures** - Void fissure missions
+  5. **Sortie** - Daily sortie
+  6. **Archon** - Weekly archon hunt
+  7. **Circuit** - Duviri Circuit rotation
+- **Minimize State**: Collapses to small (+) tab in top-right corner
+- **Control Buttons**: Minimize (−) and Close (✕) above tabs
+
+### Enhanced Styling Features
+- **Gradient Theme**: Consistent blue accent throughout
+- **Section Headers**: Blue left border with title and icon
+- **Item Cards**: Subtle gradients with hover lift effects
+- **Tab Buttons**: Active state blue highlight
+- **Status Indicators**: Color-coded (Green=Day, Blue=Night, etc.)
+- **Progress Bars**: Invasion completion with faction colors
+- **Fissure Tiers**: Color-coded borders (Bronze→Silver→Gold→Platinum)
 
 ---
 
-## ⚙️ **TECHNICAL IMPROVEMENTS**
+## TECHNICAL IMPLEMENTATION
 
-### **Enhanced JavaScript (overlay.js)**
-- **New Timer System**: Expanded data structure for all new sections
-- **Tab Management**: Complete tab switching functionality  
-- **Fissure Updates**: Real-time timer updates for all fissures
-- **Circuit Data**: Static display for current rotation
-- **Better Organization**: Modular functions for each section
+### API Integration (warframe-api.js)
+```javascript
+const API_BASE = 'https://api.tenno.tools/worldstate/pc';
 
-### **Comprehensive CSS (style.css)**
-- **Section Styling**: Individual styles for timers, fissures, circuit
-- **Grid Layouts**: Responsive reward grids for circuit items
-- **Tab Styling**: Active/inactive tab states
-- **Image Styling**: Consistent icon sizing and borders
-- **Hover Effects**: Smooth animations and glow effects
-- **Responsive Design**: Adapts to different content sizes
+// Fetch world cycles (Cetus, Fortuna, Deimos)
+async function getWorldCycles() {
+    const response = await fetch(`${API_BASE}`);
+    const result = await response.json();
+    return {
+        cetusCycle: result.data.cetusCycle,
+        vallisCycle: result.data.vallisCycle,
+        cambionCycle: result.data.cambionCycle
+    };
+}
+```
+**Critical**: API returns timestamps in seconds, multiply by 1000 for JavaScript Date objects.
 
-### **Updated Window Management (main.js)**
-- **Larger Overlay**: Resized to accommodate all new content
-- **Better Positioning**: Adjusted for new dimensions
-- **Resizable Bounds**: Updated min/max sizes
+### Enhanced JavaScript (overlay.js - 1760+ lines)
+- **updateAllTimers()**: Main loop calling all update functions every second
+- **updateWorldTimers()**: Fetches and displays cycle data with proper timestamp conversion
+- **updateFissures()**: Populates fissure lists from API, sorts by tier
+- **updateInvasions()**: Shows invasion progress with faction info
+- **updateAlertsAndEvents()**: Always displays alerts section (overrides settings)
+- **convertToTabbedLayout()**: Dynamically restructures DOM for director theme
+- **Minimize/Expand Logic**: Handles collapsed state with (+) tab restoration
+
+### Comprehensive CSS (style.css - 2400+ lines)
+- **Lines 1-500**: Base overlay styling, normal theme
+- **Lines 500-1000**: Section-specific styles (fissures, circuit, invasions)
+- **Lines 1000-1500**: Tab systems, buttons, interactive elements
+- **Lines 1500-2000**: Director theme structure and controls
+- **Lines 2000-2400**: Director-specific overrides and responsive design
+- **Key Classes**:
+  - `.director-theme`: Applied when director mode active
+  - `.director-tab`: Icon tabs for navigation
+  - `.director-dropdown-content`: Collapsible section content
+  - `.director-minimized-tab`: Restoration button when minimized
+  - `.fissure-item`, `.invasion-item`: Content cards with hover effects
+
+### Window Management (main.js)
+- **Dynamic Sizing**: Adjusts window bounds based on theme
+- **Position Persistence**: Saves and restores window location
+- **Always On Top**: Ensures overlay stays visible during gameplay
+- **IPC Handlers**: Manages settings, theme switching, overlay controls
 
 ---
 
@@ -114,123 +193,131 @@ Your Eyeframe app has been completely enhanced with all the features you request
 
 ---
 
-## 🔄 **HOW EVERYTHING WORKS**
+## HOW EVERYTHING WORKS
 
-### **World Timers Section** 
-- **Real-time Updates**: Counts down every second
-- **Status Simulation**: Cetus day/night cycle simulation
-- **Visual Icons**: Planet/location images next to each timer
-- **Hover Effects**: Cards lift and glow on hover
+### World Timers Section 
+- **Real-Time API**: Fetches live Cetus/Fortuna/Deimos cycle data
+- **Status Display**: Shows current state (Day/Night, Warm/Cold, Vome/Fass)
+- **Accurate Countdowns**: Synced with actual game cycles via API timestamps
+- **Static Timers**: Daily/Weekly resets, Baro Ki'Teer calculated locally
 
-### **Void Fissures Section**
-- **Tab Switching**: Click "Normal" or "Steel Path" tabs
-- **Live Timers**: Each fissure counts down independently  
-- **Mission Info**: Shows defense, survival, capture, etc.
-- **Tier Display**: Color-coded relic tiers with icons
+### Void Fissures Section
+- **API-Driven**: Fetches all active fissures from api.tenno.tools
+- **Tab Switching**: Click "Normal" or "Steel Path" tabs to filter
+- **Live Countdowns**: Each fissure timer updates independently  
+- **Mission Details**: Shows node, planet, mission type
+- **Tier Organization**: Sorted Lith → Meso → Neo → Axi for easy scanning
 
 ### **The Circuit Section**
-- **Tab Switching**: Toggle between Normal and Steel Path rewards
-- **Grid Layout**: Organized display of all rewards
-- **Category Separation**: Warframes and weapons in separate sections
-- **Visual Rewards**: Images make identification instant
+- **Current Rotation**: Shows available warframes and weapons
+- **Tab Toggle**: Switch between Normal and Steel Path rewards
+- **Visual Display**: Grid layout with portrait images
+- **API Integration**: Fetches rotation data from Warframe API
+
+### **Alerts & Arbitrations**
+- **Always Visible**: Section never hidden by settings (critical for arbitrations)
+- **Arbitration Timer**: Shows current arbitration mission and expiry
+- **Alert Missions**: Displays active alerts when available
+- **Empty State**: Shows message when no alerts/arbitrations active
+
+### **Events & Invasions**
+- **Events**: Shows active game events with descriptions and timers
+- **Invasions**: Displays all invasions with progress bars
+- **Faction Colors**: Grineer (red), Corpus (blue), Infested (green)
+- **Completion Progress**: Visual bars show invasion completion percentage
+
+### **Sortie & Archon Hunt**
+- **Daily Sortie**: Shows missions, modifiers, and boss
+- **Weekly Archon**: Displays archon name and missions
+- **Positioned at End**: Easy reference without cluttering main content
+- **Reset Timers**: Accurate countdowns to next reset
 
 ---
 
-## 🎮 **USER INTERACTION**
+## USER INTERACTION
 
-### **Window Controls**
-- **Minimize Button** (Orange): Hides overlay temporarily
-- **Close Button** (Red): Closes overlay completely  
-- **Drag to Move**: Click and drag header to reposition
-- **Resizable**: Drag edges to resize window
+### Theme Switching
+- **Settings Window**: Click theme dropdown to select Normal or Director
+- **Persistent**: Theme choice saved and restored on restart
+- **Dynamic**: Overlay restructures on-the-fly without restart
 
-### **Tab Navigation**
-- **Fissure Tabs**: Switch between Normal/Steel Path fissures
-- **Circuit Tabs**: Switch between Normal/Steel Path circuit
+### **Director Theme Controls**
+- **Tab Navigation**: Click any of 7 icons to switch sections
+- **Minimize Button (−)**: Collapses content, shows (+) tab
+- **Expand Button (+)**: Restores full interface from minimized state
+- **Close Button (✕)**: Completely closes overlay
+- **Drag to Move**: Click and drag anywhere to reposition
+
+### **Normal Theme Controls**
+- **Scrolling**: Use mouse wheel to scroll through all sections
+- **Close Button**: Top-right (✕) to close overlay
+- **Drag to Move**: Click and drag to reposition
+- **Resize**: Drag window edges to adjust size
+
+### Content Interaction
+- **Fissure Tabs**: Toggle Normal/Steel Path fissures
+- **Circuit Tabs**: Toggle Normal/Steel Path circuit rewards
+- **Hover Effects**: Cards lift and glow on mouse hover
 - **Visual Feedback**: Active tabs highlighted in blue
-- **Smooth Transitions**: Content fades in/out when switching
-
-### **Hover Interactions**
-- **Timer Cards**: Lift up with blue glow effect
-- **Fissure Items**: Slide right with border highlight  
-- **Circuit Rewards**: Lift up with enhanced shadow
-- **Tabs**: Background lightens on hover
 
 ---
 
-## 📊 **PERFORMANCE FEATURES**
+## PERFORMANCE & OPTIMIZATION
 
-### **Efficient Updates**
-- **1-second Intervals**: All timers update smoothly
-- **Selective Updates**: Only visible content updates
-- **Memory Management**: Proper cleanup when window closes
-- **Error Handling**: Graceful fallbacks for missing images
+### Update Cycle
+- **1-Second Interval**: All timers and countdowns update smoothly
+- **Selective Updates**: Only visible content updates (director theme)
+- **API Caching**: Reduces unnecessary API calls
+- **Error Handling**: Graceful fallbacks for missing data
+
+### **Memory Management**
+- **Cleanup on Close**: Removes event listeners and clears intervals
+- **Efficient DOM**: Reuses existing elements instead of recreating
+- **Image Lazy Load**: Images only loaded when needed
+- **Custom Scrollbars**: Styled without heavy libraries
 
 ### **Responsive Design**
 - **Auto-scaling**: Content adapts to window size
-- **Mobile-ready**: Grid layouts respond to width changes
-- **Scroll Support**: Content scrolls if window too small
-- **Custom Scrollbars**: Styled to match blue theme
+- **Scroll Support**: Sections scroll if content exceeds height
+- **Min/Max Bounds**: Prevents window from being too small/large
+- **Text Overflow**: Long names truncate with ellipsis
 
 ---
 
-## 🚀 **WHAT YOU CAN DO NOW**
+## WHAT YOU CAN DO
 
-### **Immediate Usage**
-1. ✅ **Launch App**: Run `npm start` to see all new features
-2. ✅ **Switch Tabs**: Click between Normal/Steel Path in both sections
-3. ✅ **Watch Timers**: All timers count down in real-time
-4. ✅ **Resize Window**: Drag to make larger/smaller as needed
-5. ✅ **Move Overlay**: Drag header to reposition anywhere
+### Immediate Usage
+1. **Launch App**: Run `npm start` to see all features
+2. **Switch Themes**: Use settings to toggle Normal/Director
+3. **Watch Live Data**: All timers sync with real Warframe game
+4. **Navigate Tabs**: Director theme - click icons to explore
+5. **Minimize/Restore**: Test collapse and expand functionality
+6. **Monitor Events**: Track invasions, alerts, fissures in real-time
 
 ### **Customization Options**
-1. **Add Images**: Drop Warframe assets into image folders
-2. **Modify Data**: Edit `overlay.js` to change displayed items
-3. **Adjust Colors**: Modify CSS for different color schemes
-4. **Add Sections**: Extend structure for more Warframe features
-5. **Window Sizes**: Adjust dimensions in `main.js`
+1. **Add Images**: Place Warframe assets in appropriate folders
+2. **Adjust Colors**: Modify CSS gradient values and accent colors
+3. **Change Opacity**: Edit `.overlay-content` background alpha
+4. **Reorder Sections**: Adjust HTML structure in overlay.html
+5. **Window Size**: Modify dimensions in main.js createOverlayWindow()
 
 ---
 
-## 🎨 **VISUAL SHOWCASE**
+## IMPLEMENTATION STATUS
 
-Your overlay now displays:
-- **🌍 World Timers**: 4 active timers with status indicators
-- **🌀 Void Fissures**: 4 normal + steel path fissures with timers
-- **🎯 The Circuit**: Normal (3 warframes + 5 weapons) + Steel Path (2 warframes + 2 weapons)
-- **📱 Responsive Layout**: Everything organized in sections
-- **🎨 Cohesive Design**: Consistent blue theme throughout
+FULLY COMPLETE! Your Eyeframe app has:
+- Real-time API integration with api.tenno.tools
+- Dual theme system (Normal and Director)
+- Complete image support structure
+- Void fissures with live data
+- The Circuit section with rotation info
+- Alerts & arbitrations (always visible)
+- Events, invasions, sortie, archon hunt tracking
+- Minimize/expand functionality
+- Professional design with blue gradient theme
+- Responsive layout and hover effects
+- Zero bottom padding for compact display
+- 1-second update cycle for smooth countdowns
+- Persistent settings and window position
 
----
-
-## 🔧 **FUTURE ENHANCEMENT POSSIBILITIES**
-
-### **Easy Additions**
-- **Real API Integration**: Connect to actual Warframe worldstate
-- **More Sections**: Invasions, Alerts, Nightwave, etc.
-- **Settings Panel**: User customization for displayed content
-- **Sound Alerts**: Notifications when timers expire
-- **Multiple Overlays**: Different overlays for different content
-
-### **Advanced Features**
-- **Live Data Feeds**: Real-time Warframe API integration
-- **User Preferences**: Save which sections to show/hide
-- **Notification System**: Desktop alerts for important events
-- **Multi-monitor Support**: Different overlays on different screens
-- **Theme System**: Multiple color schemes
-
----
-
-## ✅ **IMPLEMENTATION COMPLETE**
-
-🎉 **SUCCESS!** Your Eyeframe app now has:
-- ✅ Complete image support system
-- ✅ Void fissures section with Normal/Steel Path tabs
-- ✅ The Circuit section with reward displays
-- ✅ Enhanced visual design with gradients
-- ✅ Interactive tab switching
-- ✅ Real-time timer updates
-- ✅ Responsive layout design
-- ✅ Professional hover effects
-
-Everything is working and ready to use! Add your Warframe images to the folders to complete the visual experience. 🚀
+**Everything is working and production-ready!**

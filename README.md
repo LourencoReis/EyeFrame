@@ -1,6 +1,6 @@
-# 🎮 Eyeframe
+# Eyeframe
 
-> **A sleek Windows desktop overlay for Warframe world timers**
+A sleek Windows desktop overlay for Warframe world timers.
 
 Stay on top of all Warframe cycles with this beautiful, always-visible overlay featuring a stunning black-to-blue gradient design and simplified controls.
 
@@ -11,37 +11,48 @@ Stay on top of all Warframe cycles with this beautiful, always-visible overlay f
 
 ---
 
-## ✨ Features
+## Features
 
-### 🕐 **Complete Timer Coverage**
-- **Daily Reset Timer** - Track daily missions and login rewards
-- **Cetus Day/Night Cycle** - Plains of Eidolon hunting windows
-- **Fortuna Warm/Cold Cycle** - Orb Vallis temperature phases  
-- **Arbitration Rotation** - Steel Path Arbitration missions
+### Real-Time API Integration
+- **Live Warframe Data** - Connected to api.tenno.tools for real-time game state
+- **Accurate Cycle Timers** - Cetus, Fortuna, and Deimos cycles sync with actual game
+- **Dynamic Updates** - Fissures, invasions, events, and alerts update automatically
+- **Sortie & Archon Hunt** - Daily mission tracking with real countdowns
 
-### 🎨 **Beautiful Design**
-- **Black-to-Blue Gradient** - Stunning main interface
-- **Compact Overlay** - Minimal padding, maximum visibility
-- **Always Show All Timers** - No more hidden or missing timers
-- **Game-Friendly Transparency** - Blends seamlessly with Warframe
+### Complete Content Coverage
+- **World Timers** - Daily/Weekly Reset, Cetus, Fortuna, Deimos, Baro Ki'Teer
+- **Void Fissures** - All active fissures with mission types and locations
+- **The Circuit** - Current rotation with warframes and weapons
+- **Alerts & Arbitrations** - Steel Path arbitrations and game alerts
+- **Events & Invasions** - Active events with progress tracking
+- **Sortie & Archon Hunt** - Daily mission tracking at the end for easy reference
 
-### 🎮 **Gaming Optimized**
+### Two Beautiful Themes
+- **Normal Overlay** - Vertical scrolling layout with all sections visible
+- **Director Theme** - Tabbed interface with 7 icon tabs for organized viewing
+- **Black-to-Blue Gradient** - Stunning design that blends with Warframe
+- **Opacity Control** - Low opacity (0.4) for minimal game obstruction
+- **Compact Layout** - Minimal padding, maximum content visibility
+
+### Gaming Optimized
 - **Always On Top** - Stays visible during gameplay
-- **Top-Right Positioning** - Out of the way, always accessible
 - **Draggable Interface** - Position anywhere on screen
+- **Resizable Window** - Adjust size to your preference
 - **Minimal Resource Usage** - Won't impact game performance
+- **No Taskbar Icon** - Clean, unobtrusive presence
 
-### 🔧 **User-Friendly Controls**
-- **Two-Button Simplicity** - Just Minimize (−) and Close (✕)
-- **Instant Startup** - Overlay appears immediately
-- **Persistent Settings** - Your preferences are remembered
+### User-Friendly Controls
+- **Theme Toggle** - Switch between Normal and Director themes
+- **Minimize/Expand** - Hide content but keep access visible
+- **Close Button** - Completely close overlay when not needed
+- **Persistent Settings** - Your theme and position preferences are saved
 - **Portable Executable** - No installation required
 
 ---
 
-## 🚀 Download & Installation
+## Download & Installation
 
-### 📦 **Option 1: Download Release (Recommended)**
+### Option 1: Download Release (Recommended)
 
 1. **Download**: Go to [Releases](https://github.com/LourencoReis/EyeFrame/releases)
 2. **Get the ZIP**: Download `eyeframe-win32-x64.zip` from the latest release
@@ -49,9 +60,9 @@ Stay on top of all Warframe cycles with this beautiful, always-visible overlay f
 4. **Run**: Double-click `eyeframe.exe` to start
 5. **Enjoy**: Settings window and overlay appear automatically!
 
-**✅ No installation required!** The app is completely portable.
+**Note:** No installation required - the app is completely portable.
 
-### 👩‍💻 **Option 2: Build from Source**
+### Option 2: Build from Source
 
 Perfect for developers who want to customize or contribute:
 
@@ -74,81 +85,111 @@ npm run package
 
 ---
 
-## 🎯 How to Use
+## How to Use
 
-### **Quick Start**
+### Quick Start
 1. **Launch Eyeframe** - Double-click the executable
 2. **Two windows appear**:
-   - **Settings Window** (black-to-blue gradient) - Configure preferences
-   - **Overlay Window** (top-right) - Shows all 4 timers automatically
+   - **Settings Window** - Configure preferences and theme
+   - **Overlay Window** - Shows all Warframe timers and events
 
-### **Overlay Controls**
-- **Minimize (−)**: Hide timer content, show restore (+)
-- **Close (✕)**: Completely close the overlay
-- **Drag**: Click and drag the title bar to reposition
+### Overlay Themes
+- **Normal Theme**: Vertical scrolling layout showing all sections at once
+  - World Timers, Fissures, Circuit, Alerts, Events, Invasions, Sortie, Archon Hunt
+- **Director Theme**: Tabbed interface with icon navigation
+  - 7 Tabs: Timers, Alerts, Events, Fissures, Sortie, Archon, Circuit
+  - Click icons to switch between sections
 
-### **Settings Window**
-- **Timer Selection**: Enable/disable specific timers (for future features)
+### Overlay Controls
+- **Minimize**: Hide content, show minimized tab with + icon to expand
+- **Close**: Completely close the overlay
+- **Drag**: Click and drag anywhere to reposition
+- **Resize**: Drag edges to adjust window size
+
+### Settings Window
+- **Theme Selection**: Choose between Normal and Director themes
+- **Content Visibility**: Enable/disable specific sections
 - **Save Settings**: Click "Save Settings" to apply changes
-- **Show Overlay**: Click "Show Overlay" if you've closed it
+- **Open/Close Overlay**: Button to show overlay if closed
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 eyeframe/
-├── 📄 main.js              # Main Electron process & window management
-├── 🔐 preload.js           # Secure IPC bridge
-├── 📦 package.json         # Project config & dependencies
-├── 📁 renderer/            # UI components
-│   ├── 🏠 index.html       # Settings window
-│   ├── 🎯 overlay.html     # Timer overlay
-│   ├── 🎨 style.css        # Complete styling (gradient themes)
-│   ├── ⚙️ index.js         # Settings window logic
-│   └── ⏱️ overlay.js       # Timer calculations & display
-├── 📁 dist/               # Built executables (after npm run package)
-├── 📄 README.md           # This file
-├── 📄 LICENSE             # ISC License
-└── 📄 .gitignore          # Git exclusions
+├── main.js                    # Main Electron process & window management
+├── preload.js                 # Secure IPC bridge
+├── package.json               # Project config & dependencies
+├── renderer/                  # UI components
+│   ├── index.html             # Settings window
+│   ├── overlay.html           # Main overlay structure
+│   ├── style.css              # Complete styling (2400+ lines)
+│   ├── index.js               # Settings window logic
+│   ├── overlay.js             # Timer logic & API integration (1760+ lines)
+│   ├── warframe-api.js        # API wrapper for api.tenno.tools
+│   └── images/                # Image assets
+│       ├── planets/           # Timer and world icons
+│       ├── fissures/          # Relic tier icons
+│       ├── missions/          # Mission type icons
+│       ├── logos/             # Branding and section icons
+│       └── circuit/           # Circuit rewards
+│           ├── warframes/     # Warframe portraits
+│           └── weapons/       # Weapon images
+├── dist/                      # Built executables (after npm run package)
+├── README.md                  # This file
+├── CODE_EXPLANATION.md        # Technical documentation
+├── ENHANCED_FEATURES.md       # Feature guide
+├── ADDING_TIMERS_GUIDE.md     # Developer guide
+├── TIMER_CONFIGURATION.md     # Timer configuration reference
+├── LICENSE                    # ISC License
+└── .gitignore                 # Git exclusions
 ```
 
 ---
 
-## 🛠️ Technical Details
+## Technical Details
 
-### **Built With**
+### Built With
 - **[Electron 39.0.0](https://electronjs.org/)** - Cross-platform desktop framework
 - **[electron-store](https://github.com/sindresorhus/electron-store)** - Persistent settings storage
-- **Vanilla JavaScript** - No frameworks, maximum performance
-- **Modern CSS** - Gradients, animations, responsive design
+- **Vanilla JavaScript** - No frameworks, maximum performance (1760+ lines overlay logic)
+- **Modern CSS** - Gradients, animations, responsive design (2400+ lines styling)
+- **Warframe API** - Real-time integration with api.tenno.tools
 
-### **Architecture**
+### Architecture
 - **Multi-Process**: Secure main process + isolated renderer processes  
 - **IPC Communication**: Safe message passing between windows
 - **Real-Time Updates**: 1-second timer refresh cycle
+- **API Integration**: Fetches live Warframe data every update
 - **Memory Efficient**: Cleanup on window close, optimized DOM updates
+- **Dual Theme System**: Normal and Director themes with dynamic switching
 
-### **Timer Simulation**
+### API Integration
 ```javascript
-// Example: Cetus cycle calculation
-const cetusCycleTime = baseTime % 9000; // 150 minutes total
-const cetusIsDay = cetusCycleTime < 6000; // First 100 minutes = day
+// Real Warframe API connection
+const API_BASE = 'https://api.tenno.tools/worldstate/pc';
+
+// Fetch live cycle data
+const worldState = await warframeAPI.getWorldCycles();
+const cetusCycle = worldState.cetusCycle;
+const isDay = cetusCycle.isDay;
+const expiry = new Date(cetusCycle.expiry * 1000); // Convert to milliseconds
 ```
 
-**Math-based accuracy** ensures timers stay synchronized with actual Warframe cycles.
+**Live API data** ensures timers are synchronized with actual Warframe game state.
 
 ---
 
-## 🔧 Build Options
+## Build Options
 
-### **Development Mode**
+### Development Mode
 ```bash
 npm start          # Launch with DevTools
 npm run dev        # Same as above
 ```
 
-### **Production Build**
+### Production Build
 ```bash
 npm run package    # Creates dist/eyeframe-win32-x64/
 npm run build      # Alternative build command
@@ -158,7 +199,7 @@ npm run build      # Alternative build command
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how to get started:
 
@@ -168,22 +209,22 @@ We welcome contributions! Here's how to get started:
 4. **Push** to the branch (`git push origin feature/AmazingFeature`)
 5. **Open** a Pull Request
 
-### **Ideas for Contributions**
-- 🌐 Add real Warframe API integration
-- 🎨 Create new themes and color schemes  
-- 📱 Add more timer types (Nightwave, Events, etc.)
-- 🔊 Sound notifications for cycle changes
-- ⚙️ Advanced positioning and size options
+### Ideas for Contributions
+- Add additional Warframe API integrations
+- Create new themes and color schemes  
+- Add more content types (Nightwave, special events, etc.)
+- Sound notifications for cycle changes
+- Advanced positioning and size options
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **ISC License** - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Digital Extremes** - For creating the amazing Warframe universe
 - **Electron Team** - For the fantastic desktop app framework
@@ -192,18 +233,18 @@ This project is licensed under the **ISC License** - see the [LICENSE](LICENSE) 
 
 ---
 
-## 📞 Support & Feedback
+## Support & Feedback
 
-- **🐛 Bug Reports**: [Open an Issue](https://github.com/LourencoReis/EyeFrame/issues)
-- **💡 Feature Requests**: [Start a Discussion](https://github.com/LourencoReis/EyeFrame/discussions)
-- **📧 Contact**: Create an issue for any questions
+- **Bug Reports**: [Open an Issue](https://github.com/LourencoReis/EyeFrame/issues)
+- **Feature Requests**: [Start a Discussion](https://github.com/LourencoReis/EyeFrame/discussions)
+- **Contact**: Create an issue for any questions
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for the Warframe community**
+**Made for the Warframe community**
 
-⭐ **Star this repo** if Eyeframe helps your Warframe experience! ⭐
+Star this repo if Eyeframe helps your Warframe experience!
 
 </div>

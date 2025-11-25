@@ -1,153 +1,438 @@
-# ⚙️ Timer Configuration Guide
+# Timer & Content Configuration Guide
 
-This guide explains how timers work and how to configure them in your Warframe Overlay app.
+This guide explains how timers and content work in your Warframe Overlay app with real API integration.
 
-## 🎯 Understanding Timer Types
+## Understanding Content Types
 
-### 1. **Fixed Interval Timers**
-- **Example:** Daily Reset (24 hours)
-- **Behavior:** Resets at the same time every day
-- **Configuration:** Simple countdown from fixed duration
+### 1. **API-Driven Timers**
+- **Example:** Cetus/Fortuna/Deimos cycles, Fissures, Invasions
+- **Behavior:** Fetched from api.tenno.tools in real-time
+- **Configuration:** No manual calculation needed, API provides expiry timestamps
 
 ```javascript
-// 24 hour cycle (86400 seconds)
-const dailyResetTime = 86400 - (currentTime % 86400);
+// API-driven timer example
+async function updateWorldTimers() {
+    const worldState = await warframeAPI.getWorldCycles();
+    
+    // Cetus cycle from API
+    const cetusCycle = worldState.cetusCycle;
+    const expiry = new Date(cetusCycle.expiry * 1000); // Convert seconds to milliseconds
+    const timeLeft = Math.floor((expiry - Date.now()) / 1000);
+    
+    updateTimerItem('cetusTimer', {
+        name: 'Cetus',
+        status: cetusCycle.isDay ? 'Day' : 'Night',
+        timeLeft: formatTime(timeLeft)
+    });
+}
 ```
 
-### 2. **Alternating Cycle Timers**
-- **Example:** Cetus Day/Night (100min day + 50min night)
-- **Behavior:** Alternates between two states
-- **Configuration:** Different durations for each state
+**Critical**: API returns timestamps in **seconds**, always multiply by 1000 for JavaScript Date objects.
+
+### 2. **Calculated Timers**
+- **Example:** Daily Reset, Weekly Reset
+- **Behavior:** Calculated based on fixed UTC times
+- **Configuration:** Uses Date arithmetic for precise timing
 
 ```javascript
-// Cetus cycle: 100 minutes day, 50 minutes night
-const cetusCycleTime = currentTime % 9000; // Total 150 minutes
-const isDay = cetusCycleTime < 6000; // First 100 minutes = day
-const timeLeft = isDay ? (6000 - cetusCycleTime) : (9000 - cetusCycleTime);
+// Calculated timer example
+function updateResetTimers() {
+    const now = new Date();
+    const utc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0);
+    const dailyReset = utc + 86400000; // Next midnight UTC
+    const timeLeft = Math.floor((dailyReset - Date.now()) / 1000);
+}
 ```
 
-### 3. **Variable/API-Based Timers**
-- **Example:** Arbitration, Invasions, Alerts
-- **Behavior:** Times vary based on game events
-- **Configuration:** Fetched from Warframe API
+### 3. **Event-Based Content**
+- **Example:** Alerts, Events, Limited-Time Operations
+- **Behavior:** Appears/disappears based on API data availability
+- **Configuration:** Fetched from API with optional empty state handling
 
 ```javascript
-// API-based timer (future implementation)
-const response = await fetch('https://api.warframestat.us/pc');
-const data = await response.json();
-const arbitrationTime = data.arbitrations[0]?.eta;
-```
-
-## 🔧 Timer Configuration Options
-
-### **Timer Cycle Patterns**
-
-1. **Simple Countdown:**
-```javascript
-const simpleTimer = {
-    duration: 3600, // 1 hour in seconds
-    remaining: 3600 - (currentTime % 3600)
-};
-```
-
-2. **Multi-State Cycle:**
-```javascript
-const multiStateTimer = {
-    states: [
-        { name: 'Day', duration: 6000 },    // 100 minutes
-        { name: 'Night', duration: 3000 }   // 50 minutes
-    ],
-    getCurrentState: function(time) {
-        const cycleTime = time % 9000;
-        return cycleTime < 6000 ? this.states[0] : this.states[1];
+// Event-based content example
+async function updateEvents() {
+    const events = await warframeAPI.getEvents();
+    
+    if (events && events.length > 0) {
+        displayEvents(events);
+        document.getElementById('eventsSection').style.display = 'block';
+    } else {
+        document.getElementById('eventsSection').style.display = 'none';
     }
-};
+}
 ```
 
-3. **Random/Event-Based:**
+## API Integration Patterns
+
+### World Cycles (Cetus, Fortuna, Deimos)
+
 ```javascript
-const eventTimer = {
-    name: 'Special Alert',
-    getTimeLeft: async function() {
-        const apiData = await fetchFromAPI();
-        return apiData.specialEvents[0]?.timeLeft || null;
-    }
-};
+async function updateWorldTimers() {
+    const worldState = await warframeAPI.getWorldCycles();
+    
+    // Cetus Cycle
+    const cetusCycle = worldState.cetusCycle;
+    const cetusExpiry = new Date(cetusCycle.expiry * 1000);
+    const cetusTimeLeft = Math.floor((cetusExpiry - Date.now()) / 1000);
+    
+    // Fortuna/Vallis Cycle
+    const vallisCycle = worldState.vallisCycle;
+    const vallisExpiry = new Date(vallisCycle.expiry * 1000);
+    const vallisTimeLeft = Math.floor((vallisExpiry - Date.now()) / 1000);
+    
+    // Deimos/Cambion Cycle
+    const cambionCycle = worldState.cambionCycle;
+    const cambionExpiry = new Date(cambionCycle.expiry * 1000);
+    const cambionTimeLeft = Math.floor((cambionExpiry - Date.now()) / 1000);
+}
 ```
 
-## 🎨 Timer Display Customization
+**States**:
+- Cetus: `isDay` (boolean) - true = Day, false = Night
+- Fortuna: `isWarm` (boolean) - true = Warm, false = Cold
+- Deimos: `active` (string) - "vome" or "fass"
 
-### **Status Colors and Styles**
+### Void Fissures
 
-Add custom styling in `renderer/style.css`:
+```javascript
+async function updateFissures() {
+    const fissures = await warframeAPI.getFissures();
+    
+    // Filter by type
+    const normalFissures = fissures.filter(f => !f.isStorm && !f.isHard);
+    const steelPathFissures = fissures.filter(f => f.isHard);
+    
+    // Sort by tier
+    const tierOrder = ['Lith', 'Meso', 'Neo', 'Axi', 'Requiem'];
+    normalFissures.sort((a, b) => 
+        tierOrder.indexOf(a.tier) - tierOrder.indexOf(b.tier)
+    );
+    
+    // Display with countdown
+    normalFissures.forEach(fissure => {
+        const expiry = new Date(fissure.expiry * 1000);
+        const timeLeft = Math.floor((expiry - Date.now()) / 1000);
+        // Update display
+    });
+}
+```
+
+**Fissure Properties**:
+- `tier`: "Lith", "Meso", "Neo", "Axi", "Requiem"
+- `missionType`: "Defense", "Survival", "Capture", etc.
+- `node`: Mission node name
+- `enemy`: Enemy faction
+- `expiry`: Unix timestamp (seconds)
+- `isHard`: Boolean (Steel Path)
+- `isStorm`: Boolean (Void Storm)
+
+### Invasions
+
+```javascript
+async function updateInvasions() {
+    const invasions = await warframeAPI.getInvasions();
+    
+    invasions.forEach(invasion => {
+        // Calculate completion percentage
+        const completion = invasion.completion || 0;
+        const percentage = Math.abs(completion).toFixed(1);
+        
+        // Determine winner
+        const attackerWinning = completion > 0;
+        
+        // Update progress bar
+        updateProgressBar(invasion.id, percentage, attackerWinning);
+    });
+}
+```
+
+**Invasion Properties**:
+- `attackingFaction`: "Grineer", "Corpus", "Infested"
+- `defendingFaction`: Opposing faction
+- `completion`: Progress percentage (-100 to 100)
+- `node`: Mission location
+- `attackerReward`: Reward if attacker wins
+- `defenderReward`: Reward if defender wins
+
+## Display Customization
+
+### Status Colors and Styles
+
+Current implementation in `style.css`:
 
 ```css
-/* Custom timer status colors */
-.timer-status.invasion {
-    background: #f44336;
+/* Cycle status colors */
+.timer-status.day {
+    background: linear-gradient(135deg, #4CAF50, #388E3C);
     color: #ffffff;
 }
 
-.timer-status.sortie {
-    background: #ff9800;
+.timer-status.night {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
     color: #ffffff;
 }
 
-.timer-status.nightwave {
-    background: #9c27b0;
+.timer-status.warm {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
     color: #ffffff;
 }
 
-.timer-status.baro {
-    background: #ffd700;
-    color: #1a1a2e;
+.timer-status.cold {
+    background: linear-gradient(135deg, #00BCD4, #0097A7);
+    color: #ffffff;
+}
+
+/* Fissure tier colors */
+.fissure-item.lith {
+    border-left: 3px solid #CD7F32; /* Bronze */
+}
+
+.fissure-item.meso {
+    border-left: 3px solid #C0C0C0; /* Silver */
+}
+
+.fissure-item.neo {
+    border-left: 3px solid #FFD700; /* Gold */
+}
+
+.fissure-item.axi {
+    border-left: 3px solid #E5E4E2; /* Platinum */
 }
 ```
 
-### **Timer Animation Effects**
+### Hover Effects
 
 ```css
-/* Pulsing effect for urgent timers */
-.timer-item.urgent {
-    animation: pulse 2s infinite;
+/* Timer card hover effect */
+.timer-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+/* Fissure item hover effect */
+.fissure-item:hover {
+    transform: translateX(5px);
+    border-left-width: 5px;
 }
 
-/* Warning color for timers ending soon */
-.timer-countdown.warning {
-    color: #ff6b35;
-    font-weight: bold;
+/* Progress bar animation */
+.invasion-progress {
+    transition: width 0.3s ease;
+    background: linear-gradient(90deg, #1e88e5, #42a5f5);
 }
 ```
 
-## 📊 Complete Timer Examples
+### Director Theme Overrides
 
-### **Example 1: Sortie Timer (24-hour reset)**
+```css
+/* Director theme specific styling */
+.director-theme .timer-item {
+    margin-bottom: 8px;
+    padding: 12px;
+}
 
-```javascript
-// In overlay.js - simulateTimeProgression()
-const sortieRemaining = 86400 - (baseTime % 86400);
-timerData.sortieTimer = {
-    name: 'Sortie',
-    timeLeft: formatTime(sortieRemaining),
-    status: 'Available',
-    description: `Resets in ${formatTime(sortieRemaining)}`
-};
+.director-theme .fissure-item {
+    padding: 8px 12px;
+    margin-bottom: 6px;
+}
+
+.director-theme .section-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
 ```
 
-### **Example 2: Baro Ki'Teer (2-week cycle)**
+## Complete Implementation Examples
+
+### Example 1: Daily Reset Timer
 
 ```javascript
-// Baro appears every 2 weeks for 2 days
-const baroFullCycle = 1209600; // 14 days in seconds
-const baroDuration = 172800;   // 2 days in seconds
-const baroTime = baseTime % baroFullCycle;
-const baroActive = baroTime < baroDuration;
+function updateDailyReset() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    tomorrow.setUTCHours(0, 0, 0, 0);
+    
+    const timeLeft = Math.floor((tomorrow - now) / 1000);
+    
+    updateTimerItem('dailyResetTimer', {
+        name: 'Daily Reset',
+        timeLeft: formatTime(timeLeft),
+        status: 'Active'
+    });
+}
+```
+
+### Example 2: Baro Ki'Teer Timer
+
+```javascript
+async function updateBaroTimer() {
+    const worldState = await warframeAPI.getWorldCycles();
+    const voidTrader = worldState.voidTrader;
+    
+    if (voidTrader.active) {
+        // Baro is here
+        const expiry = new Date(voidTrader.expiry * 1000);
+        const timeLeft = Math.floor((expiry - Date.now()) / 1000);
+        
+        updateTimerItem('baroTimer', {
+            name: 'Baro Ki\'Teer',
+            status: voidTrader.location || 'Present',
+            timeLeft: formatTime(timeLeft)
+        });
+    } else {
+        // Baro is away
+        const activation = new Date(voidTrader.activation * 1000);
+        const timeLeft = Math.floor((activation - Date.now()) / 1000);
+        
+        updateTimerItem('baroTimer', {
+            name: 'Baro Ki\'Teer',
+            status: 'Away',
+            timeLeft: formatTime(timeLeft)
+        });
+    }
+}
+```
+
+### **Example 3: Sortie Display**
+
+```javascript
+async function updateSortie() {
+    const sortie = await warframeAPI.getSortie();
+    
+    if (sortie && sortie.missions) {
+        // Display sortie missions
+        const sortieContainer = document.getElementById('sortieContainer');
+        sortieContainer.innerHTML = '';
+        
+        sortie.missions.forEach((mission, index) => {
+            const missionDiv = document.createElement('div');
+            missionDiv.className = 'sortie-mission';
+            missionDiv.innerHTML = `
+                <div class="mission-number">${index + 1}</div>
+                <div class="mission-info">
+                    <span class="mission-type">${mission.missionType}</span>
+                    <span class="mission-node">${mission.node}</span>
+                    <span class="mission-modifier">${mission.modifier}</span>
+                </div>
+            `;
+            sortieContainer.appendChild(missionDiv);
+        });
+        
+        // Update countdown to reset
+        const expiry = new Date(sortie.expiry * 1000);
+        const timeLeft = Math.floor((expiry - Date.now()) / 1000);
+        document.getElementById('sortieCountdown').textContent = formatTime(timeLeft);
+    }
+}
+```
+
+## Critical Configuration Notes
+
+### Timestamp Conversion
+```javascript
+// WRONG - Creates dates in 1970
+const expiry = new Date(apiTimestamp);
+
+// CORRECT - Converts seconds to milliseconds
+const expiry = new Date(apiTimestamp * 1000);
+```
+
+### **Always Visible Sections**
+To prevent settings from hiding critical sections:
+```javascript
+// In update function, force display
+const alertsSection = document.getElementById('alertsSection');
+if (alertsSection) {
+    alertsSection.style.display = 'block'; // Override settings
+}
+```
+
+### **Empty State Handling**
+```javascript
+async function updateContent() {
+    const data = await warframeAPI.getSomething();
+    
+    if (!data || data.length === 0) {
+        // Show "No active [content]" message
+        showEmptyState('No active events');
+    } else {
+        displayContent(data);
+    }
+}
+```
+
+### **Error Recovery**
+```javascript
+async function updateWithFallback() {
+    try {
+        const data = await warframeAPI.getData();
+        displayData(data);
+    } catch (error) {
+        console.error('API error:', error);
+        // Show cached data or "Unavailable" message
+        displayFallback();
+    }
+}
+```
+
+## Debugging Configuration
+
+### Console Logging
+```javascript
+// Add debug logging to track data flow
+console.log('API Response:', apiData);
+console.log('Timestamp:', apiData.expiry, 'Converted:', apiData.expiry * 1000);
+console.log('Time Left:', timeLeft, 'Formatted:', formatTime(timeLeft));
+```
+
+### Check API Response Structure
+```javascript
+async function debugAPI() {
+    const response = await fetch('https://api.tenno.tools/worldstate/pc');
+    const result = await response.json();
+    console.log('Full API structure:', JSON.stringify(result, null, 2));
+}
+```
+
+## Configuration Best Practices
+
+1. **Always multiply API timestamps by 1000**
+2. **Use try-catch for all API calls**
+3. **Implement empty state handling**
+4. **Add onerror handlers to images**
+5. **Test both Normal and Director themes**
+6. **Validate data before displaying**
+7. **Format times consistently with formatTime()**
+8. **Use CSS classes for status indicators**
+9. **Keep update functions async**
+10. **Log errors for debugging**
+
+## Quick Reference
+
+**Key Functions**:
+- `formatTime(seconds)` - Formats seconds as "1h 30m" or "45s"
+- `updateTimerItem(id, data)` - Updates timer display
+- `updateAllTimers()` - Main 1-second update loop
+
+**API Functions** (warframe-api.js):
+- `getWorldCycles()` - Cetus, Fortuna, Deimos
+- `getFissures()` - All void fissures
+- `getInvasions()` - Active invasions
+- `getSortie()` - Daily sortie
+- `getArchonHunt()` - Weekly archon hunt
+- `getEvents()` - Active events
+- `getCircuit()` - Circuit rotation
+
+**Common Patterns**:
+```javascript
+// Fetch → Convert → Calculate → Display
+const data = await api.getData();
+const expiry = new Date(data.expiry * 1000);
+const timeLeft = Math.floor((expiry - Date.now()) / 1000);
+updateDisplay(formatTime(timeLeft));
+```
 
 timerData.baroTimer = {
     name: 'Baro Ki\'Teer',

@@ -1,36 +1,42 @@
-# 🧠 How Your Eyeframe App Works - Complete Code Explanation
+# How Your Eyeframe App Works - Complete Code Explanation
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 Your Eyeframe app uses **Electron**, which combines:
 - **Chromium** (for rendering HTML/CSS/JavaScript)
 - **Node.js** (for system access and file operations)
+- **Warframe API** (for real-time game data from api.tenno.tools)
 
-### 📊 App Structure:
+### App Structure:
 ```
 ┌─────────────────┐    ┌─────────────────┐
 │   Main Process  │◄──►│  Settings Window │
 │   (main.js)     │    │  (renderer)     │
 └─────────┬───────┘    └─────────────────┘
           │
-          ▼
-┌─────────────────┐    ┌─────────────────┐
-│  Overlay Window │◄──►│   Preload.js    │
-│   (renderer)    │    │  (IPC Bridge)   │
-└─────────────────┘    └─────────────────┘
+          │         ┌─────────────────┐
+          └────────►│  Warframe API   │
+                    │ api.tenno.tools│
+┌─────────────────┐ └────────┬────────┘
+│  Overlay Window │        │
+│  (Normal/Director) ◄────────┘
+│   (renderer)    │
+└─────────────────┘
 ```
 
-### 🎨 Key Design Features:
-- **Black-to-Dark-Blue Gradient**: Main settings window
-- **Simplified Overlay**: Shows all 4 timers by default
-- **Compact Layout**: Minimal padding for maximum timer visibility
-- **Two-Button Control**: Just Minimize and Close buttons
+### Key Design Features:
+- **API Integration**: Live data from api.tenno.tools (cycles, fissures, invasions, etc.)
+- **Dual Theme System**: Normal (vertical) and Director (tabbed) layouts
+- **Real-Time Updates**: All data refreshes every second
+- **Compact Layout**: Minimal padding, zero bottom spacing
+- **Minimize/Expand**: Hide content but keep access with (+) icon
+- **Always Visible Alerts**: Alerts section (with arbitration) always shown
 
 ---
 
-## 🎯 File-by-File Explanation
+## File-by-File Explanation
 
-### 1. **main.js** - The Brain of Your App
+### 1. main.js - The Brain of Your App
 
 ```javascript
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
@@ -44,7 +50,7 @@ const Store = require('electron-store');
 - **`screen`**: Gets display information for window positioning
 - **`Store`**: Saves user settings to disk
 
-#### **Settings Window Creation:**
+#### Settings Window Creation:
 ```javascript
 function createSettingsWindow() {
     settingsWindow = new BrowserWindow({
@@ -136,7 +142,7 @@ ipcMain.handle('reset-overlay-position', () => {
 
 ---
 
-### 2. **preload.js** - The Security Bridge
+### 2. preload.js - The Security Bridge
 
 ```javascript
 const { contextBridge, ipcRenderer } = require('electron');
@@ -183,7 +189,7 @@ Renderer Process          Preload.js          Main Process
 
 ---
 
-### 3. **renderer/index.html** - Settings Window Structure
+### 3. renderer/index.html - Settings Window Structure
 
 ```html
 <div class="checkbox-group">
@@ -206,9 +212,9 @@ Renderer Process          Preload.js          Main Process
 
 ---
 
-### 4. **renderer/index.js** - Settings Window Logic
+### 4. renderer/index.js - Settings Window Logic
 
-#### **Loading Settings:**
+#### Loading Settings:
 ```javascript
 async function loadSettings() {
     const settings = await window.electronAPI.getSettings(); // ← Calls preload.js
@@ -224,7 +230,7 @@ async function loadSettings() {
 4. Settings flow back through the same chain
 5. JavaScript updates checkbox states
 
-#### **Saving Settings:**
+#### Saving Settings:
 ```javascript
 async function handleFormSubmit(event) {
     event.preventDefault(); // ← Prevent page reload
@@ -276,72 +282,100 @@ async function handleFormSubmit(event) {
 </div>
 ```
 
-**Key Design Changes:**
-- **Simplified Controls**: Only minimize (−) and close (✕) buttons
-- **Always Show All**: All 4 timers visible regardless of settings
-- **Compact Layout**: Reduced padding and spacing for better fit
-- **Red Close Button**: Visual distinction for the close action
-    <div class="overlay-controls">
-        <button class="control-btn" id="expandBtn" title="Expand">↕</button>
-        <button class="control-btn" id="collapseBtn" title="Collapse">↔</button>
-        <button class="control-btn" id="minimizeBtn" title="Minimize">−</button>
-    </div>
-</div>
+**Key Design Features:**
+- **Dual Themes**: Normal vertical OR director tabbed layout (dynamically switched)
+- **API Integration**: Fissures, invasions, events fetch from live Warframe API
+- **Minimize/Expand**: Director theme has collapsible interface with (+) restore
+- **Always Visible Alerts**: Alerts section (with arbitration) never hidden
+- **Section Icons**: Images for all timer types, fissure tiers, missions
+- **No Bottom Padding**: All sections use `padding: 15px 15px 0 15px`
 
-<div class="timer-item" id="dailyResetTimer">
-    <div class="timer-header">
-        <span class="timer-name">Daily Reset</span>
-        <span class="timer-status">Active</span>
-    </div>
-    <div class="timer-countdown">2h 34m remaining</div>
-</div>
-```
+**Director Theme Structure** (created dynamically by JavaScript):
+- **7 Tab Icons**: Timers, Alerts, Events, Fissures, Sortie, Archon, Circuit
+- **Dropdown Content**: Click tabs to show/hide content sections
+- **Control Buttons**: Positioned at top-right above tab icons
+- **Minimized State**: Collapses to small (+) tab in corner
 
 **Key Elements:**
-- **`overlay-header`**: Draggable title bar with controls
-- **`timer-item`**: Individual timer display boxes
-- **`timer-status`**: Color-coded status (Day/Night/Warm/Cold/Active)
-- **`timer-countdown`**: Live updating time display
+- **`timer-item`**: Individual timer display boxes with icons
+- **`fissure-item`**: Live fissure missions from API with countdowns
+- **`invasion-item`**: Invasion progress bars with faction info
+- **`circuit-section`**: Current rotation rewards display
+- **`director-tab`**: Clickable icon tabs for section navigation
+- **`timer-status`**: Color-coded status (Day/Night/Warm/Cold)
 
 ---
 
-### 6. **renderer/overlay.js** - Overlay Window Logic
+### 6. renderer/overlay.js - Overlay Window Logic (1760+ lines)
 
-#### **Simplified Display Logic:**
+#### API Integration:
 ```javascript
-function updateTimerDisplay() {
-    // Always show all timers regardless of settings
-    updateTimerItem('dailyResetTimer', timerData.dailyReset || getDefaultTimerData('dailyReset'));
-    updateTimerItem('cetusTimer', timerData.cetusCycle || getDefaultTimerData('cetusCycle'));
-    updateTimerItem('fortunaTimer', timerData.fortunaCycle || getDefaultTimerData('fortunaCycle'));
-    updateTimerItem('arbitrationTimer', timerData.arbitrationTimer || getDefaultTimerData('arbitrationTimer'));
+// Import Warframe API wrapper
+import warframeAPI from './warframe-api.js';
+
+// Fetch real-time world cycles
+async function updateWorldTimers() {
+    const worldState = await warframeAPI.getWorldCycles();
     
-    // Make all timer items visible
-    const timerItems = overlayContent.querySelectorAll('.timer-item');
-    timerItems.forEach(item => item.style.display = 'flex');
+    // Cetus cycle from API
+    const cetusCycle = worldState.cetusCycle;
+    const isDay = cetusCycle.isDay;
+    const expiry = new Date(cetusCycle.expiry * 1000); // Multiply by 1000 for JS Date
+    const timeLeft = expiry - Date.now();
     
-    // Hide no timers message since we always show timers
-    noTimersMessage.style.display = 'none';
+    // Update display
+    updateTimerItem('cetusTimer', {
+        name: 'Cetus',
+        status: isDay ? 'Day' : 'Night',
+        timeLeft: formatTime(Math.floor(timeLeft / 1000))
+    });
+}
+
+// Fetch live fissures
+async function updateFissures() {
+    const fissures = await warframeAPI.getFissures();
+    const normalFissures = fissures.filter(f => !f.isStorm && !f.isHard);
+    const steelFissures = fissures.filter(f => f.isHard);
+    
+    // Populate fissure lists with real data
+    displayFissures('normalFissures', normalFissures);
+    displayFissures('steelFissures', steelFissures);
 }
 ```
 
-**Key Changes from Original:**
-- **No Settings-Based Hiding**: All 4 timers always visible
-- **Default Data Fallback**: Shows "Loading..." if real data unavailable
-- **No Dynamic Resizing**: Fixed window size fits all timers
+**Critical API Note**: API returns timestamps in **seconds**, must multiply by 1000 for JavaScript Date objects.
 
-#### **Timer Data Simulation:**
+#### **Director Theme Creation:**
 ```javascript
-function simulateTimeProgression() {
-    const baseTime = Math.floor(Date.now() / 1000); // Current time in seconds
+function convertToTabbedLayout() {
+    // Restructure DOM to create tabbed interface
+    const overlayContent = document.getElementById('overlayContent');
     
-    // Cetus cycle: 150 minutes total (100 day + 50 night)
-    const cetusCycleTime = baseTime % 9000; // 9000 seconds = 150 minutes
-    const cetusIsDay = cetusCycleTime < 6000; // First 100 minutes = day
-    const cetusRemaining = cetusIsDay ? 
-        (6000 - cetusCycleTime) : // Time left in day
-        (9000 - cetusCycleTime);  // Time left in night
+    // Create tab structure
+    const tabs = document.createElement('div');
+    tabs.className = 'director-tabs';
+    
+    // Add control buttons at top
+    const tabBar = document.createElement('div');
+    tabBar.className = 'director-tab-bar';
+    tabBar.style.flexDirection = 'column'; // Controls above tabs
+    
+    // 7 icon tabs: Timers, Alerts, Events, Fissures, Sortie, Archon, Circuit
+    const sections = ['timers', 'alerts', 'events', 'fissures', 'sortie', 'archon', 'circuit'];
+    sections.forEach(section => {
+        const tab = createTabIcon(section);
+        tab.addEventListener('click', () => switchTab(section));
+    });
+    
+    // Create dropdown content areas
+    sections.forEach(section => {
+        const dropdown = document.createElement('div');
+        dropdown.id = `${section}-dropdown`;
+        dropdown.className = 'director-dropdown-content';
+        // Move existing section content into dropdown
+    });
 }
+```
 ```
 
 **How Timer Cycles Work:**

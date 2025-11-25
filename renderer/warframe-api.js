@@ -49,12 +49,7 @@ class WarframeAPI {
             }
             
             if (!response.ok) {
-                console.log('API unavailable, using mock data for demonstration');
-                // Fallback to mock data for demonstration
-                this.data = this.getMockData();
-                this.lastUpdate = new Date();
-                console.log('Using mock Warframe data for demonstration, fissures:', this.data.fissures?.length);
-                return this.data;
+                throw new Error('All API endpoints failed');
             }
             
             this.data = await response.json();
@@ -75,235 +70,11 @@ class WarframeAPI {
             return this.data;
         } catch (error) {
             console.error('Error fetching Warframe API data:', error);
-            console.log('Using mock data as fallback');
-            this.data = this.getMockData();
-            this.lastUpdate = new Date();
-            console.log('Mock data loaded, fissures:', this.data.fissures?.length);
-            return this.data;
+            throw error;
         }
     }
 
-    /**
-     * Get mock data for demonstration when API is unavailable
-     */
-    getMockData() {
-        const now = Date.now();
-        const oneHour = 60 * 60 * 1000;
-        const twoHours = 2 * oneHour;
-        
-        return {
-            cetusCycle: {
-                id: "cetusCycle",
-                isDay: true,
-                state: "day",
-                expiry: new Date(now + oneHour).toISOString(),
-                timeLeft: "1h 0m 0s",
-                isCetus: true,
-                shortString: "1h to Night"
-            },
-            vallisCycle: {
-                id: "vallisCycle",
-                isWarm: false,
-                state: "cold",
-                expiry: new Date(now + 45 * 60 * 1000).toISOString(),
-                timeLeft: "45m 0s",
-                shortString: "45m to Warm"
-            },
-            arbitration: {
-                id: "arbitration",
-                activation: new Date(now - oneHour).toISOString(),
-                expiry: new Date(now + oneHour + 30 * 60 * 1000).toISOString(),
-                node: "Olympus (Mars)",
-                enemy: "Infested",
-                type: "Disruption",
-                archwing: false,
-                sharkwing: false
-            },
-            alerts: [
-                {
-                    id: "alert1",
-                    activation: new Date(now - 30 * 60 * 1000).toISOString(),
-                    expiry: new Date(now + 45 * 60 * 1000).toISOString(),
-                    description: "Alert on Lua",
-                    mission: {
-                        node: "Lua/Tycho",
-                        type: "Capture",
-                        faction: "Sentient",
-                        reward: {
-                            itemString: "15,000 Credits + Neurodes",
-                            credits: 15000
-                        }
-                    }
-                }
-            ],
-            events: [
-                {
-                    id: "event1",
-                    description: "Nightwave: Nora's Mix Tape III",
-                    tooltip: "Complete challenges to earn Nightwave Cred",
-                    node: null,
-                    activation: new Date(now - 7 * 24 * oneHour).toISOString(),
-                    expiry: new Date(now + 30 * 24 * oneHour).toISOString(),
-                    health: 0.75
-                }
-            ],
-            invasions: [
-                {
-                    id: "invasion1",
-                    node: "Tolstoj (Mercury)",
-                    activation: new Date(now - 2 * oneHour).toISOString(),
-                    expiry: new Date(now + 4 * oneHour).toISOString(),
-                    attackingFaction: "Corpus",
-                    defendingFaction: "Grineer",
-                    attackerReward: { itemString: "Mutagen Mass" },
-                    defenderReward: { itemString: "Detonite Injector" },
-                    completion: 25.5,
-                    completed: false,
-                    vsInfestation: false
-                }
-            ],
-            fissures: [
-                {
-                    id: "fissure1",
-                    activation: new Date(now - 30 * 60 * 1000).toISOString(),
-                    expiry: new Date(now + 50 * 60 * 1000).toISOString(),
-                    node: "Tessera (Venus)",
-                    missionType: "Defense",
-                    enemy: "Corpus",
-                    tier: "Lith",
-                    tierNum: 1,
-                    isStorm: false,
-                    isHard: false
-                },
-                {
-                    id: "fissure2",
-                    activation: new Date(now - 15 * 60 * 1000).toISOString(),
-                    expiry: new Date(now + 65 * 60 * 1000).toISOString(),
-                    node: "Elara (Jupiter)",
-                    missionType: "Survival",
-                    enemy: "Corpus",
-                    tier: "Meso",
-                    tierNum: 2,
-                    isStorm: false,
-                    isHard: false
-                },
-                {
-                    id: "fissure3",
-                    activation: new Date(now - 10 * 60 * 1000).toISOString(),
-                    expiry: new Date(now + oneHour + 15 * 60 * 1000).toISOString(),
-                    node: "Hydron (Sedna)",
-                    missionType: "Defense",
-                    enemy: "Grineer",
-                    tier: "Neo",
-                    tierNum: 3,
-                    isStorm: false,
-                    isHard: false
-                },
-                {
-                    id: "fissure4",
-                    activation: new Date(now - 5 * 60 * 1000).toISOString(),
-                    expiry: new Date(now + oneHour + 25 * 60 * 1000).toISOString(),
-                    node: "Mot (Void)",
-                    missionType: "Survival",
-                    enemy: "Corrupted",
-                    tier: "Axi",
-                    tierNum: 4,
-                    isStorm: false,
-                    isHard: false
-                },
-                {
-                    id: "fissure5",
-                    activation: new Date(now - 20 * 60 * 1000).toISOString(),
-                    expiry: new Date(now + 40 * 60 * 1000).toISOString(),
-                    node: "Steel Path - Mot (Void)",
-                    missionType: "Survival",
-                    enemy: "Corrupted",
-                    tier: "Requiem",
-                    tierNum: 5,
-                    isStorm: false,
-                    isHard: true
-                }
-            ],
-            sortie: {
-                id: "sortie1",
-                activation: new Date(now - 12 * oneHour).toISOString(),
-                expiry: new Date(now + 12 * oneHour).toISOString(),
-                boss: "The Sergeant",
-                faction: "Corpus",
-                variants: [
-                    {
-                        missionType: "Exterminate",
-                        modifier: "Augmented Enemy Armor",
-                        modifierDescription: "Enemies have significantly more armor.",
-                        node: "Phobos/Zeugma"
-                    },
-                    {
-                        missionType: "Mobile Defense",
-                        modifier: "Energy Reduction",
-                        modifierDescription: "Player Warframes have reduced energy capacity.",
-                        node: "Phobos/Sharpless"
-                    },
-                    {
-                        missionType: "Assassination",
-                        modifier: "Weapon Restrictions",
-                        modifierDescription: "Players may only use Bow weapons.",
-                        node: "Phobos/Zeugma"
-                    }
-                ]
-            },
-            nightwave: {
-                id: "nightwave1",
-                activation: new Date(now - 15 * 24 * oneHour).toISOString(),
-                expiry: new Date(now + 45 * 24 * oneHour).toISOString(),
-                season: 3,
-                tag: "Nora's Mix Tape III",
-                phase: 15,
-                params: new Array(30).fill(null),
-                activeChallenges: [
-                    {
-                        id: "challenge1",
-                        title: "Crack 10 Relics",
-                        description: "Open 10 Void Relics in Void Fissure missions",
-                        standing: 7000,
-                        active: true
-                    }
-                ]
-            },
-            voidTrader: {
-                id: "voidTrader1",
-                activation: new Date(now + 2 * 24 * oneHour).toISOString(),
-                expiry: new Date(now + 4 * 24 * oneHour).toISOString(),
-                character: "Baro Ki'Teer",
-                location: "Larunda Relay (Mercury)",
-                active: false,
-                inventory: [
-                    {
-                        item: "Primed Continuity",
-                        ducats: 350,
-                        credits: 100000
-                    },
-                    {
-                        item: "Prisma Gorgon",
-                        ducats: 600,
-                        credits: 50000
-                    }
-                ]
-            },
-            steelPath: {
-                activation: new Date(now - 7 * 24 * oneHour).toISOString(),
-                expiry: new Date(now + 7 * 24 * oneHour).toISOString(),
-                currentReward: {
-                    name: "Steel Essence",
-                    cost: 0
-                },
-                rotation: [
-                    { name: "Steel Essence" },
-                    { name: "Kuva" },
-                    { name: "Riven Sliver" }
-                ]
-            }
-        };
-    }
+
 
     /**
      * Get processed world cycle data
@@ -314,26 +85,45 @@ class WarframeAPI {
                 await this.fetchData();
             }
             
-            if (!this.data) return null;
+            if (!this.data) {
+                console.error('No API data available for world cycles');
+                return null;
+            }
 
-            return {
+            // Helper to convert API timestamp format (ISO string or Unix seconds) to Unix seconds
+            const parseExpiry = (expiry) => {
+                if (!expiry) return null;
+                // If it's already a number (Unix seconds), return it
+                if (typeof expiry === 'number') return expiry;
+                // If it's an ISO string, parse and convert to seconds
+                if (typeof expiry === 'string') {
+                    const date = new Date(expiry);
+                    return Math.floor(date.getTime() / 1000);
+                }
+                return null;
+            };
+
+            const cycles = {
                 cetusCycle: this.data.cetusCycle ? {
                     isDay: this.data.cetusCycle.isDay,
-                    expiry: this.data.cetusCycle.expiry
+                    expiry: parseExpiry(this.data.cetusCycle.expiry)
                 } : null,
                 vallisCycle: this.data.vallisCycle ? {
                     isWarm: this.data.vallisCycle.isWarm,
-                    expiry: this.data.vallisCycle.expiry
+                    expiry: parseExpiry(this.data.vallisCycle.expiry)
                 } : null,
                 cambionCycle: this.data.cambionCycle ? {
                     active: this.data.cambionCycle.active,
-                    expiry: this.data.cambionCycle.expiry
+                    expiry: parseExpiry(this.data.cambionCycle.expiry)
                 } : null,
                 earthCycle: this.data.earthCycle ? {
                     isDay: this.data.earthCycle.isDay,
-                    expiry: this.data.earthCycle.expiry
+                    expiry: parseExpiry(this.data.earthCycle.expiry)
                 } : null
             };
+
+            console.log('Processed world cycles:', JSON.stringify(cycles, null, 2));
+            return cycles;
         } catch (error) {
             console.error('Error getting world cycles:', error);
             return null;

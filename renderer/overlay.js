@@ -308,8 +308,6 @@ async function updateAllTimers() {
         await updateGlobalUpgrades();
         await updateSortie();
         await updateArchonHunt();
-        await updateNightwave();
-        await updateVoidTrader();
         await updateCircuit();
     } catch (error) {
         console.error('Error updating timers:', error);
@@ -904,41 +902,6 @@ async function updateArchonHunt() {
     }
 }
 
-// Update nightwave
-async function updateNightwave() {
-    try {
-        const nightwave = await warframeAPI.getNightwave();
-        const nightwaveSection = document.getElementById('nightwaveSection');
-        const nightwaveContent = document.getElementById('nightwaveContent');
-        
-        if (nightwaveSection && nightwaveContent) {
-            if (nightwave) {
-                nightwaveSection.style.display = 'block';
-                nightwaveContent.innerHTML = `
-                    <div class="nightwave-info">
-                        <div class="nightwave-season">${nightwave.tag}</div>
-                        <div class="nightwave-timer">${formatTime(new Date(nightwave.expiry) - Date.now())} remaining</div>
-                    </div>
-                    <div class="nightwave-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${(nightwave.phase / nightwave.params.length) * 100}%"></div>
-                        </div>
-                        <span>Phase ${nightwave.phase}/${nightwave.params.length}</span>
-                    </div>
-                `;
-            } else {
-                nightwaveSection.style.display = 'none';
-            }
-        }
-        
-    } catch (error) {
-        console.error('Error updating nightwave:', error);
-        // Gracefully handle missing elements
-        const nightwaveSection = document.getElementById('nightwaveSection');
-        if (nightwaveSection) nightwaveSection.style.display = 'none';
-    }
-}
-
 // Baro Ki'Teer state
 let baroCache = { data: null, lastFetch: 0 };
 
@@ -1023,63 +986,6 @@ async function fetchBaroData() {
         }
     } catch (error) {
         console.error('Error fetching Baro data:', error);
-    }
-}
-
-// Update void trader
-async function updateVoidTrader() {
-    try {
-        const voidTrader = await warframeAPI.getVoidTrader();
-        const voidtraderSection = document.getElementById('voidtraderSection');
-        const voidtraderContent = document.getElementById('voidtraderContent');
-        
-        if (voidtraderSection && voidtraderContent) {
-            if (voidTrader) {
-                voidtraderSection.style.display = 'block';
-                
-                if (voidTrader.active) {
-                    const timeRemaining = new Date(voidTrader.expiry) - Date.now();
-                    voidtraderContent.innerHTML = `
-                        <div class="voidtrader-active">
-                            <div class="voidtrader-header">
-                                <span class="voidtrader-status-badge active">🔴 ACTIVE NOW</span>
-                                <div class="voidtrader-location">📍 ${voidTrader.location}</div>
-                            </div>
-                            <div class="voidtrader-timer">⏰ Leaves in ${formatTime(timeRemaining)}</div>
-                            <div class="voidtrader-inventory">
-                                <div class="inventory-header">Featured Items (${voidTrader.inventory.length} total):</div>
-                                ${voidTrader.inventory.slice(0, 5).map(item => `
-                                    <div class="inventory-item">
-                                        <span class="item-name">${item.item}</span>
-                                        <span class="item-price">${item.ducats}🔶 + ${item.credits.toLocaleString()}cr</span>
-                                    </div>
-                                `).join('')}
-                                ${voidTrader.inventory.length > 5 ? `<div class="inventory-more">+${voidTrader.inventory.length - 5} more items</div>` : ''}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    const timeUntilArrival = new Date(voidTrader.activation) - Date.now();
-                    voidtraderContent.innerHTML = `
-                        <div class="voidtrader-inactive">
-                            <div class="voidtrader-header">
-                                <span class="voidtrader-status-badge inactive">⚫ Not Present</span>
-                            </div>
-                            <div class="voidtrader-timer">⏳ Arrives in ${formatTime(timeUntilArrival)}</div>
-                            <div class="voidtrader-note">Baro Ki'Teer appears every 2 weeks on Friday and stays until Sunday</div>
-                        </div>
-                    `;
-                }
-            } else {
-                voidtraderSection.style.display = 'none';
-            }
-        }
-        
-    } catch (error) {
-        console.error('Error updating void trader:', error);
-        // Gracefully handle missing elements
-        const voidtraderSection = document.getElementById('voidtraderSection');
-        if (voidtraderSection) voidtraderSection.style.display = 'none';
     }
 }
 
@@ -1297,11 +1203,6 @@ async function updateGlobalUpgrades() {
     } catch (error) {
         console.error('Error updating global upgrades:', error);
     }
-}
-
-// Update Alerts and Events (legacy compatibility wrapper)
-async function updateAlertsAndEvents() {
-    await updateEvents();
 }
 
 // Format time function
