@@ -5,73 +5,129 @@
 
 class WarframeAPI {
     constructor() {
-        this.baseURL = 'https://api.warframestat.us/pc/';
+        this.baseURL = 'https://api.tenno.tools/worldstate/pc';
+        this.fallbackURL = 'https://api.warframestat.us/pc';
         this.lastUpdate = null;
         this.updateInterval = 60000; // Update every minute
         this.data = null;
+        this.fallbackData = null;
+        this.fetchPromise = null; // Prevent multiple simultaneous fetches
     }
 
     /**
      * Fetch latest Warframe data from the API
      */
     async fetchData() {
-        try {
-            console.log('Fetching Warframe API data...');
-            
-            // Try warframestat.us first (supports more endpoints)
-            const mainUrl = 'https://api.warframestat.us/pc';
-            console.log('Trying main URL:', mainUrl);
-            
-            let response = await fetch(mainUrl);
-            
-            if (!response.ok) {
-                // Try alternative endpoints as fallback
-                console.log('Primary endpoint failed, trying alternatives...');
-                const alternatives = [
-                    'https://api.tenno.tools/worldstate/pc',
-                    'https://ws.warframestat.us/pc'
-                ];
+        // If already fetching, return the existing promise
+        if (this.fetchPromise) {
+            console.log('Fetch already in progress, reusing promise');
+            return this.fetchPromise;
+        }
+        
+        // If we have recent data (less than 5 seconds old), return it
+        if (this.data && this.lastUpdate) {
+            const timeSinceUpdate = Date.now() - this.lastUpdate.getTime();
+            if (timeSinceUpdate < 5000) {
+                console.log('Using cached data from', Math.floor(timeSinceUpdate / 1000), 'seconds ago');
+                return this.data;
+            }
+        }
+        
+        this.fetchPromise = (async () => {
+            try {
+                console.log('Fetching Warframe API data...');
                 
-                for (const url of alternatives) {
+                const mainUrl = 'https://api.tenno.tools/worldstate/pc';
+                console.log('Fetching from:', mainUrl);
+                
+                const response = await fetch(mainUrl, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API error response:', errorText);
+                    throw new Error(`API returned status ${response.status}: ${errorText}`);
+                }
+                
+                this.data = await response.json();
+                this.lastUpdate = new Date();
+                console.log('Warframe API data updated successfully');
+                console.log('Available API properties:', Object.keys(this.data));
+                
+                // Try to fetch archon hunt from fallback API if not available
+                if (!this.data.archonHunt) {
                     try {
-                        console.log('Trying:', url);
-                        response = await fetch(url);
-                        if (response.ok) {
-                            console.log('Success with:', url);
-                            break;
+                        console.log('Attempting to fetch archon hunt from fallback API...');
+                        const fallbackResponse = await fetch(this.fallbackURL, {
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (fallbackResponse.ok) {
+                            this.fallbackData = await fallbackResponse.json();
+                            console.log('Fallback API fetched successfully');
+                            if (this.fallbackData.archonHunt) {
+                                console.log('Archon hunt found in fallback API');
+                            }
                         }
-                    } catch (e) {
-                        console.log('Failed:', url, e.message);
+                    } catch (fallbackError) {
+                        console.log('Fallback API fetch failed, continuing without archon hunt:', fallbackError.message);
                     }
                 }
-            } else {
-                console.log('Success with main URL:', mainUrl);
+                
+                this.data = await response.json();
+                this.lastUpdate = new Date();
+                console.log('Warframe API data updated successfully');
+                console.log('Available API properties:', Object.keys(this.data));
+                
+                // Log world cycle data for debugging
+                if (this.data.cetusCycle) {
+                    console.log('Cetus Cycle:', {
+                        isDay: this.data.cetusCycle.isDay,
+                        state: this.data.cetusCycle.state,
+                        expiry: this.data.cetusCycle.expiry,
+                        timeLeft: this.data.cetusCycle.timeLeft
+                    });
+                }
+                if (this.data.vallisCycle) {
+                    console.log('Vallis Cycle:', {
+                        isWarm: this.data.vallisCycle.isWarm,
+                        expiry: this.data.vallisCycle.expiry,
+                        timeLeft: this.data.vallisCycle.timeLeft
+                    });
+                }
+                if (this.data.cambionCycle) {
+                    console.log('Cambion Cycle:', {
+                        active: this.data.cambionCycle.active,
+                        state: this.data.cambionCycle.state,
+                        expiry: this.data.cambionCycle.expiry
+                    });
+                }
+                console.log('Fissure-related properties:', Object.keys(this.data).filter(key => 
+                    key.toLowerCase().includes('fissure') || 
+                    key.toLowerCase().includes('void') || 
+                    key.toLowerCase().includes('relic')
+                ));
+                console.log('Hunt-related properties:', Object.keys(this.data).filter(key => 
+                    key.toLowerCase().includes('hunt') || 
+                    key.toLowerCase().includes('archon') || 
+                    key.toLowerCase().includes('weekly') ||
+                    key.toLowerCase().includes('boss')
+                ));
+                return this.data;
+            } catch (error) {
+                console.error('Error fetching Warframe API data:', error);
+                throw error;
+            } finally {
+                this.fetchPromise = null;
             }
-            
-            if (!response.ok) {
-                throw new Error('All API endpoints failed');
-            }
-            
-            this.data = await response.json();
-            this.lastUpdate = new Date();
-            console.log('Warframe API data updated successfully');
-            console.log('Available API properties:', Object.keys(this.data));
-            console.log('Fissure-related properties:', Object.keys(this.data).filter(key => 
-                key.toLowerCase().includes('fissure') || 
-                key.toLowerCase().includes('void') || 
-                key.toLowerCase().includes('relic')
-            ));
-            console.log('Hunt-related properties:', Object.keys(this.data).filter(key => 
-                key.toLowerCase().includes('hunt') || 
-                key.toLowerCase().includes('archon') || 
-                key.toLowerCase().includes('weekly') ||
-                key.toLowerCase().includes('boss')
-            ));
-            return this.data;
-        } catch (error) {
-            console.error('Error fetching Warframe API data:', error);
-            throw error;
-        }
+        })();
+        
+        return this.fetchPromise;
     }
 
 
@@ -90,39 +146,32 @@ class WarframeAPI {
                 return null;
             }
 
-            // Helper to convert API timestamp format (ISO string or Unix seconds) to Unix seconds
-            const parseExpiry = (expiry) => {
-                if (!expiry) return null;
-                // If it's already a number (Unix seconds), return it
-                if (typeof expiry === 'number') return expiry;
-                // If it's an ISO string, parse and convert to seconds
-                if (typeof expiry === 'string') {
-                    const date = new Date(expiry);
-                    return Math.floor(date.getTime() / 1000);
-                }
-                return null;
-            };
-
             const cycles = {
                 cetusCycle: this.data.cetusCycle ? {
                     isDay: this.data.cetusCycle.isDay,
-                    expiry: parseExpiry(this.data.cetusCycle.expiry)
+                    state: this.data.cetusCycle.state,
+                    expiry: this.data.cetusCycle.expiry, // ISO string
+                    timeLeft: this.data.cetusCycle.timeLeft
                 } : null,
                 vallisCycle: this.data.vallisCycle ? {
                     isWarm: this.data.vallisCycle.isWarm,
-                    expiry: parseExpiry(this.data.vallisCycle.expiry)
+                    expiry: this.data.vallisCycle.expiry, // ISO string
+                    timeLeft: this.data.vallisCycle.timeLeft
                 } : null,
                 cambionCycle: this.data.cambionCycle ? {
                     active: this.data.cambionCycle.active,
-                    expiry: parseExpiry(this.data.cambionCycle.expiry)
+                    state: this.data.cambionCycle.state,
+                    expiry: this.data.cambionCycle.expiry, // ISO string
+                    activation: this.data.cambionCycle.activation
                 } : null,
                 earthCycle: this.data.earthCycle ? {
                     isDay: this.data.earthCycle.isDay,
-                    expiry: parseExpiry(this.data.earthCycle.expiry)
+                    expiry: this.data.earthCycle.expiry, // ISO string
+                    timeLeft: this.data.earthCycle.timeLeft
                 } : null
             };
 
-            console.log('Processed world cycles:', JSON.stringify(cycles, null, 2));
+            console.log('World cycles from API:', cycles);
             return cycles;
         } catch (error) {
             console.error('Error getting world cycles:', error);
@@ -593,188 +642,46 @@ class WarframeAPI {
     }
 
     /**
-     * Get Archon Hunt data - fetches from dedicated endpoint
+     * Get Archon Hunt data
      */
     async getArchonHunt() {
         try {
-            console.log('Fetching archon hunt from dedicated endpoint...');
-            
-            // Try the dedicated archon hunt endpoint first
-            try {
-                const response = await fetch('https://api.warframestat.us/pc/archonHunt');
-                console.log('Archon hunt endpoint response status:', response.status, response.statusText);
-                
-                if (response.ok) {
-                    const archonData = await response.json();
-                    console.log('Archon hunt fetched from dedicated endpoint:', JSON.stringify(archonData, null, 2));
-                    
-                    if (archonData && archonData.id) {
-                        return {
-                            id: archonData.id,
-                            activation: archonData.activation,
-                            expiry: archonData.expiry,
-                            boss: archonData.boss,
-                            faction: archonData.faction || archonData.factionKey || 'Narmer',
-                            missions: archonData.missions || [],
-                            rewardPool: archonData.rewardPool,
-                            isArchon: true
-                        };
-                    } else {
-                        console.log('Archon hunt data exists but missing id:', archonData);
-                    }
-                } else {
-                    console.log('Archon hunt endpoint returned non-OK status');
-                }
-            } catch (fetchError) {
-                console.error('Dedicated archon hunt endpoint error:', fetchError);
-            }
-            
-            // Fallback to main data if dedicated endpoint fails
             if (!this.data) {
                 await this.fetchData();
             }
             
-            if (!this.data) return null;
-
-            // Check all possible property names in main data
-            let archonData = this.data.archonHunt || 
-                             this.data.archon || 
-                             this.data.archonhunt;
-
-            console.log('getArchonHunt - Checking main data, archonData found:', !!archonData);
-
-            if (!archonData) {
-                console.log('No archon hunt data found in any source');
+            console.log('getArchonHunt - Searching for archon hunt data...');
+            
+            // First check the main API
+            let archonHunt = this.data?.archonHunt;
+            
+            // If not found, check the fallback API
+            if (!archonHunt && this.fallbackData) {
+                console.log('Checking fallback API for archon hunt...');
+                archonHunt = this.fallbackData.archonHunt;
+            }
+            
+            if (!archonHunt) {
+                console.log('No archon hunt data available in either API');
+                console.log('Note: Archon Hunt data may not be currently available');
                 return null;
             }
-
-            // Handle array format
-            const archon = Array.isArray(archonData) ? archonData[0] : archonData;
             
-            console.log('Archon hunt data structure:', {
-                id: archon.id,
-                boss: archon.boss,
-                missionsCount: archon.missions?.length
-            });
-
+            console.log('Archon hunt raw data:', JSON.stringify(archonHunt, null, 2));
+            
+            // Handle different data structures
             return {
-                id: archon.id || 'archon-hunt',
-                activation: archon.activation,
-                expiry: archon.expiry,
-                boss: archon.boss,
-                faction: archon.faction || archon.factionKey || 'Narmer',
-                missions: archon.missions || archon.variants || [],
-                rewardPool: archon.rewardPool,
-                isArchon: true
+                id: archonHunt.id || 'archon-hunt',
+                activation: archonHunt.activation || archonHunt.start || archonHunt.startTime,
+                expiry: archonHunt.expiry || archonHunt.end || archonHunt.endTime,
+                boss: archonHunt.boss || archonHunt.bossName || archonHunt.enemy || 'Unknown Archon',
+                faction: archonHunt.faction || archonHunt.factionKey || archonHunt.enemyFaction || 'Narmer',
+                missions: archonHunt.missions || archonHunt.nodes || [],
+                rewardPool: archonHunt.rewardPool || archonHunt.rewards || []
             };
         } catch (error) {
             console.error('Error getting archon hunt:', error);
             return null;
-        }
-    }
-
-    /**
-     * Get arbitration data
-     */
-    async getArbitration() {
-        try {
-            if (!this.data) await this.fetchData();
-            
-            console.log('getArbitration - All API properties:', Object.keys(this.data || {}));
-            // Check both singular and plural, and handle {time, data:[]} structure
-            let arbitrationData = this.data?.arbitration || this.data?.arbitrations;
-            
-            // If it's wrapped in {time, data:[]}, extract the data
-            if (arbitrationData && arbitrationData.time && arbitrationData.data) {
-                console.log('Arbitration is wrapped, extracting data array');
-                arbitrationData = arbitrationData.data;
-            }
-            
-            // Log the raw data for debugging
-            if (Array.isArray(arbitrationData)) {
-                console.log('Arbitration data array length:', arbitrationData.length);
-                if (arbitrationData.length > 0) {
-                    console.log('First arbitration item:', JSON.stringify(arbitrationData[0], null, 2));
-                } else {
-                    console.log('Arbitration data array is empty - might be between rotations');
-                }
-            }
-            
-            // Get first element if it's an array
-            const arbitration = Array.isArray(arbitrationData) ? arbitrationData[0] : arbitrationData;
-            
-            console.log('Arbitration data after extraction:', arbitration);
-            
-            if (!arbitration || (Array.isArray(arbitrationData) && arbitrationData.length === 0)) {
-                console.log('No arbitration data found - data array is empty or no arbitration active');
-                console.log('Arbitrations property value:', this.data?.arbitrations);
-                return null;
-            }
-            
-            console.log('Arbitration raw data:', JSON.stringify(arbitration, null, 2));
-            
-            return {
-                id: arbitration.id,
-                activation: arbitration.activation,
-                expiry: arbitration.expiry,
-                node: arbitration.mission?.node || 'Unknown',
-                type: arbitration.mission?.type || 'Unknown',
-                faction: arbitration.mission?.faction || 'Unknown',
-                enemyLevel: `${arbitration.mission?.minEnemyLevel || 0}-${arbitration.mission?.maxEnemyLevel || 0}`,
-                archwing: arbitration.mission?.archwingRequired || false,
-                rewards: arbitration.rewardTypes || []
-            };
-        } catch (error) {
-            console.error('Error getting arbitration:', error);
-            return null;
-        }
-    }
-
-    /**
-     * Get events data
-     */
-    async getEvents() {
-        try {
-            if (!this.data) await this.fetchData();
-            
-            console.log('getEvents - All API properties:', Object.keys(this.data || {}));
-            let eventsData = this.data?.events;
-            
-            // If it's wrapped in {time, data:[]}, extract the data
-            if (eventsData && eventsData.time && eventsData.data) {
-                console.log('Events is wrapped, extracting data array');
-                eventsData = eventsData.data;
-            }
-            
-            const events = Array.isArray(eventsData) ? eventsData : [];
-            
-            if (!events || events.length === 0) {
-                console.log('No events data found');
-                return [];
-            }
-            
-            console.log('Events raw data:', JSON.stringify(events, null, 2));
-            
-            return events.map(event => ({
-                id: event.id,
-                activation: event.activation,
-                expiry: event.expiry,
-                description: event.description,
-                tooltip: event.tooltip,
-                node: event.node,
-                faction: event.faction,
-                rewards: event.rewards || [],
-                health: event.health,
-                maximumScore: event.maximumScore,
-                currentScore: event.currentScore,
-                affiliatedWith: event.affiliatedWith,
-                jobs: event.jobs || [],
-                interimSteps: event.interimSteps || [],
-                asString: event.asString
-            }));
-        } catch (error) {
-            console.error('Error getting events:', error);
-            return [];
         }
     }
 
